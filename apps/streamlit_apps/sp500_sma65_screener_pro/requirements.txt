@@ -1,0 +1,7 @@
+streamlit==1.28.0
+pandas==2.0.3
+numpy==1.24.3
+alpaca-trade-api==3.0.2
+plotly==5.17.0
+schedule==1.2.0
+yfinance==0.2.28

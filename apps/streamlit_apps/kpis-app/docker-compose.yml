@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  kpi-dashboard:
+    build: .
+    container_name: weekly-kpi-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      # Mount assets directory for easier updates
+      - ./assets:/app/assets:ro
+      # Persist database data
+      - kpi-data:/app/data
+    restart: unless-stopped
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  kpi-data:
+    driver: local

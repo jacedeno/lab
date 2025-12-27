@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Login - SAM.gov Federal Contract Opportunity Search by{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="login-card">
+                    <!-- Header -->
+                    <div class="login-header text-center mb-4">
+                        <div class="login-logo mb-3">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h2 class="text-sam-navy mb-2">Federal Contract Search</h2>
+                        <p class="text-muted">SAM.gov Opportunity Search Portal by <a href="https://geekendzone.com">GeekendZone</a></p>
+                    </div>
+                    
+                    <!-- Login Form -->
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), 
+                                         placeholder="Enter your email address") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), 
+                                           placeholder="Enter your password") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-sam-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Sign In
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Additional Info -->
+                    <div class="login-footer mt-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Authorized Personnel Only</strong><br>
+                            This system is for authorized users only. Please contact <a href="mailto:jacedeno@geeekendzone.com">GeekendZone</a> if you need access.
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-lock me-1"></i>
+                                Secure Government Portal
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Background Pattern -->
+<div class="login-background"></div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // Focus on email field
+    $('#email').focus();
+    
+    // Add loading state to form submission
+    $('form').on('submit', function() {
+        var submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Signing In...');
+    });
+    
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert-dismissible').alert('close');
+    }, 5000);
+});
+</script>
+{% endblock %}

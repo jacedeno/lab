@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - SAM.gov Federal Contract Opportunity Search{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Results Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="results-header">
+                <h2 class="text-sam-navy mb-2">
+                    <i class="fas fa-list-alt me-2"></i>
+                    Search Results
+                </h2>
+                <p class="lead text-muted">
+                    Found {{ total_records }} total opportunities. Displaying the first {{ opportunities|length }} results.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Summary and Actions -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="search-summary-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        Search Criteria
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Date Range:</strong> {{ search_params.postedFrom }} to {{ search_params.postedTo }}<br>
+                            {% if search_params.title %}
+                                <strong>Title Keywords:</strong> {{ search_params.title }}<br>
+                            {% endif %}
+                            {% if search_params.organizationName %}
+                                <strong>Organization:</strong> {{ search_params.organizationName }}<br>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if search_params.ptype %}
+                                <strong>Procurement Type:</strong> {{ search_params.ptype }}<br>
+                            {% endif %}
+                            {% if search_params.typeOfSetAside %}
+                                <strong>Set-Aside Type:</strong> {{ search_params.typeOfSetAside }}<br>
+                            {% endif %}
+                            {% if search_params.ncode %}
+                                <strong>NAICS Code(s):</strong> {{ search_params.ncode }}<br>
+                            {% endif %}
+                            <strong>Results Limit:</strong> {{ search_params.limit }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="results-actions-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('export_csv') }}" class="btn btn-success">
+                            <i class="fas fa-download me-2"></i>
+                            Export to CSV
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>
+                            New Search
+                        </a>
+                        <a href="{{ url_for('search_history') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-history me-2"></i>
+                            Search History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results Table -->
+    {% if opportunities %}
+    <div class="row">
+        <div class="col-12">
+            <div class="results-table-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>
+                        Opportunities ({{ opportunities|length }} of {{ total_records }})
+                    </h5>
+                    <div class="table-controls">
+                        <button class="btn btn-sm btn-outline-secondary" id="toggleColumns">
+                            <i class="fas fa-columns me-1"></i>
+                            Columns
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="resultsTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="sortable" data-column="posted_date">
+                                        Posted Date <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="title">
+                                        Title <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="solicitation_number">
+                                        Solicitation # <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="agency">
+                                        Agency <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="set_aside">
+                                        Set Aside <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="response_deadline">
+                                        Response Deadline <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="status">
+                                        Status <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="naics_code">
+                                        NAICS <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="location">
+                                        Location <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th>Point of Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for opp in opportunities %}
+                                <tr>
+                                    <td data-value="{{ opp.posted_date }}">{{ opp.posted_date }}</td>
+                                    <td class="title-cell">
+                                        <div class="title-content">
+                                            <strong>{{ opp.title[:60] }}{% if opp.title|length > 60 %}...{% endif %}</strong>
+                                            {% if opp.description and opp.description != 'N/A' %}
+                                                <div class="description-preview">
+                                                    {{ opp.description[:100] }}{% if opp.description|length > 100 %}...{% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>{{ opp.solicitation_number }}</td>
+                                    <td>{{ opp.agency[:30] }}{% if opp.agency|length > 30 %}...{% endif %}</td>
+                                    <td>
+                                        {% if opp.set_aside and opp.set_aside != 'N/A' %}
+                                            <span class="badge bg-info">{{ opp.set_aside }}</span>
+                                        {% else %}
+                                            <span class="text-muted">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-value="{{ opp.response_deadline }}">{{ opp.response_deadline }}</td>
+                                    <td>
+                                        {% if opp.status == 'Active' %}
+                                            <span class="badge bg-success">{{ opp.status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ opp.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ opp.naics_code }}</td>
+                                    <td>{{ opp.location[:25] }}{% if opp.location|length > 25 %}...{% endif %}</td>
+                                    <td class="contact-cell">
+                                        {% if opp.point_of_contact and opp.point_of_contact != 'N/A' %}
+                                            {{ opp.point_of_contact[:30] }}{% if opp.point_of_contact|length > 30 %}...{% endif %}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if opp.ui_link %}
+                                                <a href="{{ opp.ui_link }}" target="_blank" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   title="View on SAM.gov">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                            {% endif %}
+                                            <button class="btn btn-outline-info btn-sm" 
+                                                    onclick="showDetails({{ loop.index0 }})" 
+                                                    title="View Details">
+                                                <i class="fas fa-info-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="no-results-card text-center">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4>No Opportunities Found</h4>
+                <p class="text-muted">
+                    No opportunities match your search criteria. Try adjusting your search parameters.
+                </p>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>
+                    Try Another Search
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Opportunity Details Modal -->
+<div class="modal fade" id="opportunityModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Opportunity Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="modalSamLink" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    View on SAM.gov
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Column Visibility Modal -->
+<div class="modal fade" id="columnsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Show/Hide Columns</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="0" id="col0" checked>
+                    <label class="form-check-label" for="col0">Posted Date</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="1" id="col1" checked>
+                    <label class="form-check-label" for="col1">Title</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="2" id="col2" checked>
+                    <label class="form-check-label" for="col2">Solicitation #</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="3" id="col3" checked>
+                    <label class="form-check-label" for="col3">Agency</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="4" id="col4" checked>
+                    <label class="form-check-label" for="col4">Set Aside</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="5" id="col5" checked>
+                    <label class="form-check-label" for="col5">Response Deadline</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="6" id="col6" checked>
+                    <label class="form-check-label" for="col6">Status</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="7" id="col7" checked>
+                    <label class="form-check-label" for="col7">NAICS</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="8" id="col8" checked>
+                    <label class="form-check-label" for="col8">Location</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input column-toggle" type="checkbox" value="9" id="col9" checked>
+                    <label class="form-check-label" for="col9">Point of Contact</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Store opportunities data for JavaScript access
+var opportunitiesData = {{ opportunities | tojson }};
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // Table sorting functionality
+    $('.sortable').click(function() {
+        var column = $(this).data('column');
+        var table = $('#resultsTable tbody');
+        var rows = table.find('tr').toArray();
+        var isAsc = $(this).hasClass('asc');
+        
+        // Clear all sort indicators
+        $('.sortable i').removeClass('fa-sort-up fa-sort-down').addClass('fa-sort');
+        $('.sortable').removeClass('asc desc');
+        
+        // Sort rows
+        var self = this;
+        rows.sort(function(a, b) {
+            var columnIndex = $(self).index();
+            var aVal = $(a).find('td').eq(columnIndex).data('value') || $(a).find('td').eq(columnIndex).text();
+            var bVal = $(b).find('td').eq(columnIndex).data('value') || $(b).find('td').eq(columnIndex).text();
+            
+            if (isAsc) {
+                return aVal > bVal ? -1 : 1;
+            } else {
+                return aVal < bVal ? -1 : 1;
+            }
+        });
+        
+        // Update sort indicator
+        if (isAsc) {
+            $(this).addClass('desc');
+            $(this).find('i').removeClass('fa-sort').addClass('fa-sort-down');
+        } else {
+            $(this).addClass('asc');
+            $(this).find('i').removeClass('fa-sort').addClass('fa-sort-up');
+        }
+        
+        // Rebuild table
+        table.empty().append(rows);
+    });
+    
+    // Column visibility toggle
+    $('#toggleColumns').click(function() {
+        $('#columnsModal').modal('show');
+    });
+    
+    $('.column-toggle').change(function() {
+        var columnIndex = parseInt($(this).val());
+        var isChecked = $(this).is(':checked');
+        
+        if (isChecked) {
+            $('#resultsTable th:eq(' + columnIndex + ')').show();
+            $('#resultsTable td:nth-child(' + (columnIndex + 1) + ')').show();
+        } else {
+            $('#resultsTable th:eq(' + columnIndex + ')').hide();
+            $('#resultsTable td:nth-child(' + (columnIndex + 1) + ')').hide();
+        }
+    });
+});
+
+// Show opportunity details in modal
+function showDetails(index) {
+    var opp = opportunitiesData[index];
+    var modalBody = $('#modalBody');
+    
+    var statusBadge = opp.status === 'Active' ? 'success' : 'secondary';
+    
+    var detailsHtml = '<div class="row">' +
+        '<div class="col-md-6">' +
+        '<h6>Basic Information</h6>' +
+        '<table class="table table-sm">' +
+        '<tr><td><strong>Title:</strong></td><td>' + opp.title + '</td></tr>' +
+        '<tr><td><strong>Solicitation #:</strong></td><td>' + opp.solicitation_number + '</td></tr>' +
+        '<tr><td><strong>Agency:</strong></td><td>' + opp.agency + '</td></tr>' +
+        '<tr><td><strong>Status:</strong></td><td><span class="badge bg-' + statusBadge + '">' + opp.status + '</span></td></tr>' +
+        '</table>' +
+        '</div>' +
+        '<div class="col-md-6">' +
+        '<h6>Dates & Details</h6>' +
+        '<table class="table table-sm">' +
+        '<tr><td><strong>Posted Date:</strong></td><td>' + opp.posted_date + '</td></tr>' +
+        '<tr><td><strong>Response Deadline:</strong></td><td>' + opp.response_deadline + '</td></tr>' +
+        '<tr><td><strong>NAICS Code:</strong></td><td>' + opp.naics_code + '</td></tr>' +
+        '<tr><td><strong>Set Aside:</strong></td><td>' + opp.set_aside + '</td></tr>' +
+        '</table>' +
+        '</div>' +
+        '</div>' +
+        '<div class="row mt-3">' +
+        '<div class="col-12">' +
+        '<h6>Location & Contact</h6>' +
+        '<table class="table table-sm">' +
+        '<tr><td><strong>Location:</strong></td><td>' + opp.location + '</td></tr>' +
+        '<tr><td><strong>Point of Contact:</strong></td><td>' + opp.point_of_contact + '</td></tr>' +
+        '</table>' +
+        '</div>' +
+        '</div>';
+    
+    if (opp.description && opp.description !== 'N/A') {
+        detailsHtml += '<div class="row mt-3">' +
+            '<div class="col-12">' +
+            '<h6>Description</h6>' +
+            '<p class="text-muted">' + opp.description + '</p>' +
+            '</div>' +
+            '</div>';
+    }
+    
+    modalBody.html(detailsHtml);
+    
+    // Update SAM.gov link
+    if (opp.ui_link) {
+        $('#modalSamLink').attr('href', opp.ui_link).show();
+    } else {
+        $('#modalSamLink').hide();
+    }
+    
+    $('#opportunityModal').modal('show');
+}
+</script>
+{% endblock %}

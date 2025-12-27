@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}About - Sam Valentin{% endblock %}
+
+{% block content %}
+<!-- About Section -->
+<section class="about-section py-5 mt-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <img src="{{ url_for('static', filename='img/about-me.jpg') }}" alt="Sam Valentin" class="img-fluid rounded about-img">
+            </div>
+            <div class="col-lg-6">
+                <h1 class="display-5 fw-bold mb-4">About Me</h1>
+                <p class="lead mb-4">
+                    Hi! I'm Sam Valentin, a passionate full-stack web developer with a love for creating 
+                    innovative digital solutions. I specialize in building modern, responsive web applications 
+                    that provide exceptional user experiences.
+                </p>
+                <p class="mb-4">
+                    With several years of experience in web development, I've worked on various projects 
+                    ranging from small business websites to complex web applications. I'm proficient in 
+                    both frontend and backend technologies, allowing me to handle projects from conception 
+                    to deployment.
+                </p>
+                <p class="mb-4">
+                    When I'm not coding, you can find me exploring new technologies, contributing to open-source 
+                    projects, or enjoying outdoor activities. I believe in continuous learning and staying 
+                    up-to-date with the latest industry trends.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Experience Section -->
+<section class="experience-section py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">Experience & Education</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h3 class="mb-4">Work Experience</h3>
+                <div class="timeline">
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-content">
+                            <h5>Senior Web Developer</h5>
+                            <h6 class="text-muted">Tech Solutions Inc. | 2022 - Present</h6>
+                            <p>Led development of multiple web applications using Flask, React, and PostgreSQL. 
+                               Managed a team of junior developers and implemented best practices for code quality.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-content">
+                            <h5>Full Stack Developer</h5>
+                            <h6 class="text-muted">Digital Innovations | 2020 - 2022</h6>
+                            <p>Developed and maintained web applications for various clients. Worked with 
+                               Python, JavaScript, and cloud technologies to deliver scalable solutions.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-content">
+                            <h5>Junior Developer</h5>
+                            <h6 class="text-muted">StartUp Hub | 2019 - 2020</h6>
+                            <p>Started my career building responsive websites and learning modern web 
+                               development frameworks. Gained experience in agile development methodologies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3 class="mb-4">Education & Certifications</h3>
+                <div class="timeline">
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-content">
+                            <h5>Bachelor of Computer Science</h5>
+                            <h6 class="text-muted">University of Technology | 2015 - 2019</h6>
+                            <p>Specialized in software engineering and web technologies. Graduated with honors 
+                               and completed multiple projects in various programming languages.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-content">
+                            <h5>AWS Certified Developer</h5>
+                            <h6 class="text-muted">Amazon Web Services | 2021</h6>
+                            <p>Certified in developing and maintaining applications on the AWS platform.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item mb-4">
+                        <div class="timeline-content">
+                            <h5>Google Analytics Certified</h5>
+                            <h6 class="text-muted">Google | 2020</h6>
+                            <p>Certified in Google Analytics implementation and data analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Skills Progress Section -->
+<section class="skills-progress py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">Technical Skills</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="skill-item mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Python/Flask</span>
+                        <span>90%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 90%"></div>
+                    </div>
+                </div>
+                <div class="skill-item mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>JavaScript/React</span>
+                        <span>85%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="skill-item mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>HTML/CSS</span>
+                        <span>95%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 95%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="skill-item mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Database Design</span>
+                        <span>80%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 80%"></div>
+                    </div>
+                </div>
+                <div class="skill-item mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Cloud Technologies</span>
+                        <span>75%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 75%"></div>
+                    </div>
+                </div>
+                <div class="skill-item mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>UI/UX Design</span>
+                        <span>70%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 70%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

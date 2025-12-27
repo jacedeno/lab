@@ -1,0 +1,50 @@
+body {
+  background: #0f172a; /* slate-900 */
+  color: #e2e8f0;      /* slate-200 */
+}
+.navbar {
+  background: linear-gradient(90deg, #0b1220, #111827);
+}
+.card {
+  background: #0b1220;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+}
+.card.glass {
+  backdrop-filter: blur(6px);
+  background: rgba(11,18,32,0.8);
+}
+.form-control, .form-select {
+  background: #0f172a;
+  border-color: #23324d;
+  color: #e5e7eb;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 0.2rem rgba(96,165,250,0.15);
+}
+.btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+.kpi .kpi-title {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.kpi .kpi-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+.table {
+  color: #e2e8f0;
+}
+.table thead th {
+  color: #93c5fd;
+  border-bottom-color: #1f2937;
+}
+.table tbody tr:hover {
+  background: rgba(59,130,246,0.08);
+}

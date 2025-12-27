@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio - Sam Valentin{% endblock %}
+
+{% block content %}
+<!-- Portfolio Header -->
+<section class="portfolio-header py-5 mt-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold mb-4">My Portfolio</h1>
+                <p class="lead">A collection of my recent projects and work</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Portfolio Filter -->
+<section class="portfolio-filter py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="filter-buttons">
+                    <button class="btn btn-outline-primary active me-2 mb-2" data-filter="all">All Projects</button>
+                    <button class="btn btn-outline-primary me-2 mb-2" data-filter="web-app">Web Applications</button>
+                    <button class="btn btn-outline-primary me-2 mb-2" data-filter="website">Websites</button>
+                    <button class="btn btn-outline-primary me-2 mb-2" data-filter="api">APIs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Portfolio Projects -->
+<section class="portfolio-projects py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Project 1 -->
+            <div class="col-lg-4 col-md-6 portfolio-item" data-category="web-app">
+                <div class="project-card card h-100">
+                    <img src="{{ url_for('static', filename='img/project1.jpg') }}" alt="E-Commerce Platform" class="card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">E-Commerce Platform</h5>
+                        <p class="card-text flex-grow-1">A full-featured e-commerce platform built with Flask, React, and PostgreSQL. Features include user authentication, product catalog, shopping cart, and payment integration.</p>
+                        <div class="project-tags mb-3">
+                            <span class="badge bg-primary me-1">Flask</span>
+                            <span class="badge bg-primary me-1">React</span>
+                            <span class="badge bg-primary me-1">PostgreSQL</span>
+                            <span class="badge bg-primary me-1">Stripe API</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn btn-primary btn-sm me-2">Live Demo</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="col-lg-4 col-md-6 portfolio-item" data-category="web-app">
+                <div class="project-card card h-100">
+                    <img src="{{ url_for('static', filename='img/project2.jpg') }}" alt="Task Management App" class="card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Task Management App</h5>
+                        <p class="card-text flex-grow-1">A collaborative task management application with real-time updates, team collaboration features, and project tracking. Built with modern web technologies.</p>
+                        <div class="project-tags mb-3">
+                            <span class="badge bg-success me-1">Vue.js</span>
+                            <span class="badge bg-success me-1">Node.js</span>
+                            <span class="badge bg-success me-1">Socket.io</span>
+                            <span class="badge bg-success me-1">MongoDB</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn btn-primary btn-sm me-2">Live Demo</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="col-lg-4 col-md-6 portfolio-item" data-category="website">
+                <div class="project-card card h-100">
+                    <img src="{{ url_for('static', filename='img/project3.jpg') }}" alt="Restaurant Website" class="card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Restaurant Website</h5>
+                        <p class="card-text flex-grow-1">A beautiful, responsive website for a local restaurant featuring online menu, reservation system, and contact information. Optimized for mobile devices.</p>
+                        <div class="project-tags mb-3">
+                            <span class="badge bg-warning me-1">HTML5</span>
+                            <span class="badge bg-warning me-1">CSS3</span>
+                            <span class="badge bg-warning me-1">JavaScript</span>
+                            <span class="badge bg-warning me-1">Bootstrap</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn btn-primary btn-sm me-2">Live Demo</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 4 -->
+            <div class="col-lg-4 col-md-6 portfolio-item" data-category="api">
+                <div class="project-card card h-100">
+                    <img src="{{ url_for('static', filename='img/project4.jpg') }}" alt="Weather API" class="card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Weather API Service</h5>
+                        <p class="card-text flex-grow-1">A RESTful API service that provides weather data with caching, rate limiting, and comprehensive documentation. Built with Flask and Redis.</p>
+                        <div class="project-tags mb-3">
+                            <span class="badge bg-info me-1">Flask</span>
+                            <span class="badge bg-info me-1">Redis</span>
+                            <span class="badge bg-info me-1">OpenWeather API</span>
+                            <span class="badge bg-info me-1">Docker</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn btn-primary btn-sm me-2">API Docs</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 5 -->
+            <div class="col-lg-4 col-md-6 portfolio-item" data-category="web-app">
+                <div class="project-card card h-100">
+                    <img src="{{ url_for('static', filename='img/project5.jpg') }}" alt="Blog Platform" class="card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Blog Platform</h5>
+                        <p class="card-text flex-grow-1">A modern blogging platform with user authentication, rich text editor, comment system, and admin dashboard. SEO optimized and mobile responsive.</p>
+                        <div class="project-tags mb-3">
+                            <span class="badge bg-danger me-1">Django</span>
+                            <span class="badge bg-danger me-1">PostgreSQL</span>
+                            <span class="badge bg-danger me-1">Bootstrap</span>
+                            <span class="badge bg-danger me-1">AWS S3</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn btn-primary btn-sm me-2">Live Demo</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 6 -->
+            <div class="col-lg-4 col-md-6 portfolio-item" data-category="website">
+                <div class="project-card card h-100">
+                    <img src="{{ url_for('static', filename='img/project6.jpg') }}" alt="Corporate Website" class="card-img-top">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Corporate Website</h5>
+                        <p class="card-text flex-grow-1">A professional corporate website with content management system, contact forms, and analytics integration. Built with modern design principles.</p>
+                        <div class="project-tags mb-3">
+                            <span class="badge bg-secondary me-1">WordPress</span>
+                            <span class="badge bg-secondary me-1">PHP</span>
+                            <span class="badge bg-secondary me-1">MySQL</span>
+                            <span class="badge bg-secondary me-1">Custom Theme</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="btn btn-primary btn-sm me-2">Live Demo</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="portfolio-cta py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="mb-4">Interested in Working Together?</h2>
+                <p class="lead mb-4">I'm always open to discussing new projects and opportunities.</p>
+                <a href="{{ url_for('contact') }}" class="btn btn-light btn-lg">Get In Touch</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Portfolio filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filterValue = this.getAttribute('data-filter');
+            
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter items
+            portfolioItems.forEach(item => {
+                if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

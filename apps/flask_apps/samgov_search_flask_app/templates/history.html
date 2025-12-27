@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Search History - SAM.gov Federal Contract Opportunity Search{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="history-header">
+                <h2 class="text-sam-navy mb-2">
+                    <i class="fas fa-history me-2"></i>
+                    Search History
+                </h2>
+                <p class="lead text-muted">
+                    View and manage your previous searches
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search History -->
+    {% if searches.items %}
+    <div class="row">
+        <div class="col-12">
+            <div class="history-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Your Searches ({{ searches.total }} total)
+                    </h5>
+                    <div class="history-actions">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            New Search
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Search Date</th>
+                                    <th>Search Summary</th>
+                                    <th>Results</th>
+                                    <th>Exports</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for search in searches.items %}
+                                <tr>
+                                    <td>
+                                        <div class="search-date">
+                                            <strong>{{ search.search_date|datetime }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="search-summary">
+                                            <div class="summary-text">
+                                                {{ search.get_search_summary() }}
+                                            </div>
+                                            <div class="search-details mt-1">
+                                                {% set params = search.get_search_params() %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    {{ params.postedFrom }} to {{ params.postedTo }}
+                                                    {% if params.limit %}
+                                                        <span class="ms-2">
+                                                            <i class="fas fa-list me-1"></i>
+                                                            Limit: {{ params.limit }}
+                                                        </span>
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info fs-6">
+                                            {{ search.results_count }} results
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if search.export_count > 0 %}
+                                            <span class="badge bg-success fs-6">
+                                                {{ search.export_count }} exports
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">No exports</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('repeat_search', search_id=search.id) }}" 
+                                               class="btn btn-outline-primary" 
+                                               title="Repeat this search">
+                                                <i class="fas fa-redo me-1"></i>
+                                                Repeat
+                                            </a>
+                                            <button class="btn btn-outline-info" 
+                                                    onclick="showSearchDetails({{ loop.index0 }})" 
+                                                    title="View search details">
+                                                <i class="fas fa-info-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                {% if searches.pages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="Search history pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if searches.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('search_history', page=searches.prev_num) }}">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in searches.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != searches.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('search_history', page=page_num) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if searches.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('search_history', page=searches.next_num) }}">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="no-history-card text-center">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <h4>No Search History</h4>
+                <p class="text-muted">
+                    You haven't performed any searches yet. Start by creating your first search.
+                </p>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>
+                    Start Searching
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Search Details Modal -->
+<div class="modal fade" id="searchDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Search Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="searchModalBody">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="repeatSearchBtn" class="btn btn-primary">
+                    <i class="fas fa-redo me-2"></i>
+                    Repeat Search
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Store search data for JavaScript access
+var searchesData = {{ searches.items | tojson }};
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Show search details in modal
+function showSearchDetails(index) {
+    var search = searchesData[index];
+    var modalBody = $('#searchModalBody');
+    var params = search.search_params ? JSON.parse(search.search_params) : {};
+    
+    var detailsHtml = '<div class="row">' +
+        '<div class="col-md-6">' +
+        '<h6>Search Information</h6>' +
+        '<table class="table table-sm">' +
+        '<tr><td><strong>Search Date:</strong></td><td>' + new Date(search.search_date).toLocaleString() + '</td></tr>' +
+        '<tr><td><strong>Results Found:</strong></td><td>' + search.results_count + '</td></tr>' +
+        '<tr><td><strong>Exports:</strong></td><td>' + search.export_count + '</td></tr>' +
+        '</table>' +
+        '</div>' +
+        '<div class="col-md-6">' +
+        '<h6>Date Range</h6>' +
+        '<table class="table table-sm">' +
+        '<tr><td><strong>Posted From:</strong></td><td>' + (params.postedFrom || 'N/A') + '</td></tr>' +
+        '<tr><td><strong>Posted To:</strong></td><td>' + (params.postedTo || 'N/A') + '</td></tr>' +
+        '<tr><td><strong>Results Limit:</strong></td><td>' + (params.limit || 'N/A') + '</td></tr>' +
+        '</table>' +
+        '</div>' +
+        '</div>';
+    
+    if (params.title || params.organizationName || params.ptype || params.typeOfSetAside || params.ncode) {
+        detailsHtml += '<div class="row mt-3">' +
+            '<div class="col-12">' +
+            '<h6>Search Filters</h6>' +
+            '<table class="table table-sm">';
+        
+        if (params.title) {
+            detailsHtml += '<tr><td><strong>Title Keywords:</strong></td><td>' + params.title + '</td></tr>';
+        }
+        if (params.organizationName) {
+            detailsHtml += '<tr><td><strong>Organization:</strong></td><td>' + params.organizationName + '</td></tr>';
+        }
+        if (params.ptype) {
+            detailsHtml += '<tr><td><strong>Procurement Type:</strong></td><td>' + params.ptype + '</td></tr>';
+        }
+        if (params.typeOfSetAside) {
+            detailsHtml += '<tr><td><strong>Set-Aside Type:</strong></td><td>' + params.typeOfSetAside + '</td></tr>';
+        }
+        if (params.ncode) {
+            detailsHtml += '<tr><td><strong>NAICS Code(s):</strong></td><td>' + params.ncode + '</td></tr>';
+        }
+        
+        detailsHtml += '</table></div></div>';
+    }
+    
+    modalBody.html(detailsHtml);
+    
+    // Update repeat search button
+    $('#repeatSearchBtn').attr('href', '/repeat_search/' + search.id);
+    
+    $('#searchDetailsModal').modal('show');
+}
+
+$(document).ready(function() {
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert-dismissible').alert('close');
+    }, 5000);
+});
+</script>
+{% endblock %}

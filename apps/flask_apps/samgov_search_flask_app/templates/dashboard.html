@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SAM.gov Federal Contract Opportunity Search{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-header">
+                <h1 class="text-sam-navy mb-2">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Federal Contract Opportunity Search
+                </h1>
+                <p class="lead text-muted">
+                    Search and analyze federal contract opportunities from the official SAM.gov database
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ search_count }}</h3>
+                    <p>Total Searches</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ current_user.email.split('@')[0] }}</h3>
+                    <p>Current User</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ current_user.last_login|datetime if current_user.last_login else 'First time' }}</h3>
+                    <p>Last Login</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Search Form -->
+        <div class="col-lg-8">
+            <div class="search-form-card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Search Parameters
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('search') }}" id="searchForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Date Range -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.posted_from.label(class="form-label required") }}
+                                {{ form.posted_from(class="form-control" + (" is-invalid" if form.posted_from.errors else "")) }}
+                                {% if form.posted_from.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.posted_from.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.posted_to.label(class="form-label required") }}
+                                {{ form.posted_to(class="form-control" + (" is-invalid" if form.posted_to.errors else "")) }}
+                                {% if form.posted_to.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.posted_to.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Procurement and Set-Aside Types -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.ptype.label(class="form-label") }}
+                                {{ form.ptype(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.set_aside.label(class="form-label") }}
+                                {{ form.set_aside(class="form-select") }}
+                            </div>
+                        </div>
+                        
+                        <!-- Text Inputs -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.title.label(class="form-label") }}
+                                {{ form.title(class="form-control", placeholder="e.g., IT Services, Construction") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.org_name.label(class="form-label") }}
+                                {{ form.org_name(class="form-control", placeholder="e.g., Department of Defense") }}
+                            </div>
+                        </div>
+                        
+                        <!-- NAICS Code Section -->
+                        <div class="mb-3">
+                            <label class="form-label">NAICS Code Selection</label>
+                            <div class="naics-section">
+                                <!-- NAICS Mode Selection -->
+                                <div class="mb-3">
+                                    {{ form.naics_mode.label(class="form-label") }}
+                                    {{ form.naics_mode(class="form-select") }}
+                                </div>
+                                
+                                <div class="naics-options">
+                                    <!-- All NAICS Codes -->
+                                    <div class="naics-option" id="naics-all" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Searching across all NAICS codes (no filtering)
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Default NAICS Codes -->
+                                    <div class="naics-option" id="naics-default" style="display: none;">
+                                        <label class="form-label">Select from predefined NAICS codes:</label>
+                                        <div class="naics-checkbox-container border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                            {% for choice in form.default_naics %}
+                                                <div class="form-check mb-2">
+                                                    {{ choice(class="form-check-input") }}
+                                                    {{ choice.label(class="form-check-label") }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllNaics">
+                                                <i class="fas fa-check-square me-1"></i>Select All
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllNaics">
+                                                <i class="fas fa-square me-1"></i>Clear All
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Custom NAICS Code -->
+                                    <div class="naics-option" id="naics-custom" style="display: none;">
+                                        {{ form.custom_naics.label(class="form-label") }}
+                                        {{ form.custom_naics(class="form-control" + (" is-invalid" if form.custom_naics.errors else ""), 
+                                                           placeholder="e.g., 541511", maxlength="6") }}
+                                        {% if form.custom_naics.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.custom_naics.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="form-text">Enter exactly 6 digits for a valid NAICS code</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Results Limit -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                {{ form.limit.label(class="form-label") }}
+                                {{ form.limit(class="form-control" + (" is-invalid" if form.limit.errors else "")) }}
+                                {% if form.limit.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.limit.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Maximum records to retrieve (1-1000)</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-sam-primary btn-lg" id="searchBtn">
+                                <i class="fas fa-search me-2"></i>
+                                Search Opportunities
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Searches Sidebar -->
+        <div class="col-lg-4">
+            <div class="recent-searches-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Recent Searches
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_searches %}
+                        {% for search in recent_searches %}
+                            <div class="recent-search-item">
+                                <div class="search-summary">
+                                    <strong>{{ search.get_search_summary()[:50] }}{% if search.get_search_summary()|length > 50 %}...{% endif %}</strong>
+                                </div>
+                                <div class="search-meta">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>{{ search.search_date|datetime }}
+                                        <span class="ms-2">
+                                            <i class="fas fa-list me-1"></i>{{ search.results_count }} results
+                                        </span>
+                                        {% if search.export_count > 0 %}
+                                            <span class="ms-2">
+                                                <i class="fas fa-download me-1"></i>{{ search.export_count }} exports
+                                            </span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="search-actions mt-2">
+                                    <a href="{{ url_for('repeat_search', search_id=search.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-redo me-1"></i>Repeat
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('search_history') }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-history me-1"></i>View All History
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fas fa-search fa-2x mb-3"></i>
+                            <p>No searches yet</p>
+                            <p class="small">Your search history will appear here after you perform your first search.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- API Status Card -->
+            <div class="api-status-card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-plug me-2"></i>
+                        API Status
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="apiStatus">
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="ms-2">Checking API connection...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // NAICS mode handling
+    function updateNaicsOptions() {
+        var selectedMode = $('#naics_mode').val();
+        $('.naics-option').hide();
+        $('#naics-' + selectedMode).show();
+    }
+    
+    $('#naics_mode').change(updateNaicsOptions);
+    updateNaicsOptions();
+    
+    // Select/Clear all NAICS codes
+    $('#selectAllNaics').click(function() {
+        $('input[name="default_naics"]').prop('checked', true);
+    });
+    
+    $('#clearAllNaics').click(function() {
+        $('input[name="default_naics"]').prop('checked', false);
+    });
+    
+    // Form submission handling
+    $('#searchForm').on('submit', function() {
+        var submitBtn = $('#searchBtn');
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Searching...');
+    });
+    
+    // Custom NAICS validation
+    $('#custom_naics').on('input', function() {
+        var value = $(this).val();
+        if (value && !/^\d{6}$/.test(value)) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Check API status
+    $.get('{{ url_for("check_api_key") }}')
+        .done(function(data) {
+            var statusHtml = '';
+            if (data.configured) {
+                statusHtml = '<div class="text-success"><i class="fas fa-check-circle me-2"></i>API Connected</div>';
+            } else {
+                statusHtml = '<div class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>API Key Not Configured</div>';
+            }
+            $('#apiStatus').html(statusHtml);
+        })
+        .fail(function() {
+            $('#apiStatus').html('<div class="text-danger"><i class="fas fa-times-circle me-2"></i>Connection Error</div>');
+        });
+});
+</script>
+{% endblock %}

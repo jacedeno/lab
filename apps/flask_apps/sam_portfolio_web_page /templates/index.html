@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Sam Valentin - Web Developer Portfolio{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section d-flex align-items-center">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Hi, I'm Sam Valentin</h1>
+                <h2 class="h3 text-muted mb-4">Full Stack Web Developer</h2>
+                <p class="lead mb-4">
+                    I create beautiful, responsive websites and web applications using modern technologies. 
+                    Passionate about clean code, user experience, and bringing ideas to life through technology.
+                </p>
+                <div class="hero-buttons">
+                    <a href="{{ url_for('portfolio') }}" class="btn btn-primary btn-lg me-3">View My Work</a>
+                    <a href="{{ url_for('contact') }}" class="btn btn-outline-primary btn-lg">Get In Touch</a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image">
+                    <img src="{{ url_for('static', filename='img/profile.jpg') }}" alt="Sam Valentin" class="img-fluid rounded-circle profile-img">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Skills Section -->
+<section class="skills-section py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">My Skills</h2>
+                <p class="text-muted">Technologies and tools I work with</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="skill-card text-center p-4">
+                    <i class="fab fa-html5 fa-3x text-danger mb-3"></i>
+                    <h4>Frontend Development</h4>
+                    <p class="text-muted">HTML5, CSS3, JavaScript, React, Vue.js, Bootstrap</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="skill-card text-center p-4">
+                    <i class="fas fa-server fa-3x text-success mb-3"></i>
+                    <h4>Backend Development</h4>
+                    <p class="text-muted">Python, Flask, Django, Node.js, Express, REST APIs</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="skill-card text-center p-4">
+                    <i class="fas fa-database fa-3x text-info mb-3"></i>
+                    <h4>Database & Tools</h4>
+                    <p class="text-muted">MySQL, PostgreSQL, MongoDB, Git, Docker, AWS</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Projects Preview -->
+<section class="projects-preview py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">Recent Projects</h2>
+                <p class="text-muted">A glimpse of my latest work</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="project-card">
+                    <img src="{{ url_for('static', filename='img/project1.jpg') }}" alt="Project 1" class="card-img-top">
+                    <div class="card-body">
+                        <h5 class="card-title">E-Commerce Platform</h5>
+                        <p class="card-text">A full-stack e-commerce solution built with Flask and React.</p>
+                        <a href="{{ url_for('portfolio') }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="project-card">
+                    <img src="{{ url_for('static', filename='img/project2.jpg') }}" alt="Project 2" class="card-img-top">
+                    <div class="card-body">
+                        <h5 class="card-title">Task Management App</h5>
+                        <p class="card-text">A collaborative task management application with real-time updates.</p>
+                        <a href="{{ url_for('portfolio') }}" class="btn btn-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('portfolio') }}" class="btn btn-outline-primary">View All Projects</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

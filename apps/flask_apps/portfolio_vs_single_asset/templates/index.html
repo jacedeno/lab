@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio vs Single Asset Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #1e40af;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-8">
+            <h1 class="text-4xl font-bold mb-2">Portfolio vs Single Asset Comparison</h1>
+            <p class="text-lg opacity-90">Compare your investment portfolio performance against index funds</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Input Form -->
+        <div class="bg-white rounded-xl card-shadow p-8 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Investment Parameters</h2>
+            
+            <form id="portfolioForm" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Stock Tickers -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Stock Tickers (comma-separated)
+                        </label>
+                        <input type="text" id="tickers" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                               value="AAPL, NVDA, MSFT, AMZN, META, GOOGL, TSLA"
+                               placeholder="e.g., AAPL, MSFT, GOOGL">
+                        <p class="text-xs text-gray-500 mt-1">Enter stock symbols separated by commas</p>
+                    </div>
+
+                    <!-- Index Ticker -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Comparison Index/Stock
+                        </label>
+                        <input type="text" id="indexTicker" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                               value="SPY"
+                               placeholder="e.g., SPY, QQQ">
+                        <p class="text-xs text-gray-500 mt-1">Single ticker to compare against</p>
+                    </div>
+
+                    <!-- Start Date -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Start Date
+                        </label>
+                        <input type="date" id="startDate" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                               value="2019-01-01">
+                    </div>
+
+                    <!-- End Date -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            End Date
+                        </label>
+                        <input type="date" id="endDate" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                               value="">
+                    </div>
+
+                    <!-- Initial Investment -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Initial Investment ($)
+                        </label>
+                        <input type="number" id="initialInvestment" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                               value="1000" min="0" step="100">
+                    </div>
+
+                    <!-- Contribution -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Regular Contribution ($)
+                        </label>
+                        <input type="number" id="contribution" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+                               value="200" min="0" step="50">
+                    </div>
+
+                    <!-- Frequency -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Contribution Frequency
+                        </label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="frequency" value="Weekly" checked
+                                       class="w-5 h-5 text-blue-900 focus:ring-blue-700">
+                                <span class="ml-2 text-gray-700">Weekly</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="frequency" value="Monthly"
+                                       class="w-5 h-5 text-blue-900 focus:ring-blue-700">
+                                <span class="ml-2 text-gray-700">Monthly</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit" 
+                            class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-900 to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:from-blue-950 hover:to-blue-800 transform hover:scale-105 transition duration-200">
+                        Calculate Portfolio Performance
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="hidden text-center py-12">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-gray-600 font-medium">Calculating portfolio performance...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden bg-red-50 border-l-4 border-red-500 p-6 rounded-lg mb-8">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                    <h3 class="text-red-800 font-semibold mb-1">Error</h3>
+                    <p id="errorText" class="text-red-700"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            <!-- Performance Chart -->
+            <div class="bg-white rounded-xl card-shadow p-6 mb-8">
+                <div id="chartContainer" class="w-full"></div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Portfolio Stats -->
+                <div class="bg-white rounded-xl card-shadow p-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Selected Stocks Portfolio</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Final Value</span>
+                            <span id="portfolioFinal" class="text-2xl font-bold text-blue-600">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Invested</span>
+                            <span id="portfolioInvested" class="text-lg font-semibold text-gray-700">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Profit/Loss</span>
+                            <span id="portfolioProfit" class="text-lg font-semibold">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t">
+                            <span class="text-gray-700 font-medium">Total Return</span>
+                            <span id="portfolioReturn" class="text-2xl font-bold">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Index Stats -->
+                <div class="bg-white rounded-xl card-shadow p-8">
+                    <h3 id="indexTitle" class="text-lg font-semibold text-gray-800 mb-4">Index Fund</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Final Value</span>
+                            <span id="indexFinal" class="text-2xl font-bold text-green-600">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Invested</span>
+                            <span id="indexInvested" class="text-lg font-semibold text-gray-700">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Profit/Loss</span>
+                            <span id="indexProfit" class="text-lg font-semibold">$0</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t">
+                            <span class="text-gray-700 font-medium">Total Return</span>
+                            <span id="indexReturn" class="text-2xl font-bold">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8">
+            <div class="text-center">
+                <p class="text-gray-400 mb-2">Created by <span class="text-blue-400 font-semibold">Jose Cedeno</span></p>
+                <p class="text-gray-500 text-sm">
+                    <strong>Disclaimer:</strong> This simulator is for educational purposes only. Not financial advice.
+                    Always consult with a qualified financial advisor before making investment decisions.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set today's date as default end date
+        document.getElementById('endDate').value = new Date().toISOString().split('T')[0];
+
+        // Form submission handler
+        document.getElementById('portfolioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Hide previous results and errors
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('loadingSpinner').classList.remove('hidden');
+            
+            // Gather form data
+            const frequency = document.querySelector('input[name="frequency"]:checked').value;
+            const data = {
+                tickers: document.getElementById('tickers').value,
+                indexTicker: document.getElementById('indexTicker').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                initialInvestment: document.getElementById('initialInvestment').value,
+                contribution: document.getElementById('contribution').value,
+                frequency: frequency
+            };
+            
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Calculation failed');
+                }
+                
+                // Display results
+                displayResults(result);
+                
+            } catch (error) {
+                document.getElementById('errorText').textContent = error.message;
+                document.getElementById('errorMessage').classList.remove('hidden');
+            } finally {
+                document.getElementById('loadingSpinner').classList.add('hidden');
+            }
+        });
+        
+        function displayResults(result) {
+            // Display chart
+            const chartData = JSON.parse(result.chart);
+            Plotly.newPlot('chartContainer', chartData.data, chartData.layout, {responsive: true});
+            
+            // Display portfolio stats
+            const portfolio = result.results.portfolio;
+            document.getElementById('portfolioFinal').textContent = '$' + portfolio.finalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('portfolioInvested').textContent = '$' + portfolio.totalInvested.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const portfolioProfit = portfolio.profit;
+            const portfolioProfitEl = document.getElementById('portfolioProfit');
+            portfolioProfitEl.textContent = (portfolioProfit >= 0 ? '+$' : '-$') + Math.abs(portfolioProfit).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            portfolioProfitEl.className = 'text-lg font-semibold ' + (portfolioProfit >= 0 ? 'text-green-600' : 'text-red-600');
+            
+            const portfolioReturnEl = document.getElementById('portfolioReturn');
+            portfolioReturnEl.textContent = (portfolio.return >= 0 ? '+' : '') + portfolio.return.toFixed(2) + '%';
+            portfolioReturnEl.className = 'text-2xl font-bold ' + (portfolio.return >= 0 ? 'text-green-600' : 'text-red-600');
+            
+            // Display index stats
+            const index = result.results.index;
+            document.getElementById('indexTitle').textContent = index.name;
+            document.getElementById('indexFinal').textContent = '$' + index.finalValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('indexInvested').textContent = '$' + index.totalInvested.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const indexProfit = index.profit;
+            const indexProfitEl = document.getElementById('indexProfit');
+            indexProfitEl.textContent = (indexProfit >= 0 ? '+$' : '-$') + Math.abs(indexProfit).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            indexProfitEl.className = 'text-lg font-semibold ' + (indexProfit >= 0 ? 'text-green-600' : 'text-red-600');
+            
+            const indexReturnEl = document.getElementById('indexReturn');
+            indexReturnEl.textContent = (index.return >= 0 ? '+' : '') + index.return.toFixed(2) + '%';
+            indexReturnEl.className = 'text-2xl font-bold ' + (index.return >= 0 ? 'text-green-600' : 'text-red-600');
+            
+            // Show results section
+            document.getElementById('resultsSection').classList.remove('hidden');
+            
+            // Scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

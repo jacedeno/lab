@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="filter-card card shadow-sm mb-3">
+  <div class="card-body">
+    <form method="get">
+      <!-- Date filters row -->
+      <div class="row g-3 align-items-end mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Start date</label>
+          <input type="date" class="form-control" name="start_date" value="{{ args.get('start_date', opts.min_date) }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">End date</label>
+          <input type="date" class="form-control" name="end_date" value="{{ args.get('end_date', today) }}" max="{{ today }}">
+        </div>
+        <div class="col-md-6">
+          <button class="btn btn-primary me-2" type="submit">Apply</button>
+          <a class="btn btn-outline-secondary me-2" href="{{ url_for('dashboard', ds_id=ds_id) }}">Reset</a>
+          <a class="btn btn-success" href="{{ url_for('download_csv', ds_id=ds_id) }}">Download CSV</a>
+        </div>
+      </div>
+      
+      <!-- Multiselect filters row -->
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Departments</label>
+          <select class="form-select" name="dept" multiple size="4">
+            <option value="__ALL__" {% if not args.getlist('dept') or "__ALL__" in args.getlist('dept') %}selected{% endif %}>[All]</option>
+            {% for v in opts.depts %}
+              <option value="{{ v }}" {% if v in args.getlist('dept') %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Equipment</label>
+          <select class="form-select" name="equip" multiple size="4">
+            <option value="__ALL__" {% if not args.getlist('equip') or "__ALL__" in args.getlist('equip') %}selected{% endif %}>[All]</option>
+            {% for v in opts.equips %}
+              <option value="{{ v }}" {% if v in args.getlist('equip') %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Responsible Dept</label>
+          <select class="form-select" name="resp" multiple size="4">
+            <option value="__ALL__" {% if not args.getlist('resp') or "__ALL__" in args.getlist('resp') %}selected{% endif %}>[All]</option>
+            {% for v in opts.resps %}
+              <option value="{{ v }}" {% if v in args.getlist('resp') %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Category</label>
+          <select class="form-select" name="cat" multiple size="4">
+            <option value="__ALL__" {% if not args.getlist('cat') or "__ALL__" in args.getlist('cat') %}selected{% endif %}>[All]</option>
+            {% for v in opts.cats %}
+              <option value="{{ v }}" {% if v in args.getlist('cat') %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3">
+    <div class="kpi card shadow-sm"><div class="card-body">
+      <div class="kpi-title">Total Stoppages</div>
+      <div class="kpi-value">{{ kpis.total_stoppages }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi card shadow-sm"><div class="card-body">
+      <div class="kpi-title">Total Hours</div>
+      <div class="kpi-value">{{ "%.1f"|format(kpis.total_hours) }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi card shadow-sm"><div class="card-body">
+      <div class="kpi-title">Avg Duration (h)</div>
+      <div class="kpi-value">{{ "%.1f"|format(kpis.avg_duration) }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi card shadow-sm"><div class="card-body">
+      <div class="kpi-title">Economic Impact</div>
+      <div class="kpi-value">${{ "{:,.0f}".format(kpis.economic_impact) }}</div>
+    </div></div>
+  </div>
+</div>
+
+<!-- Charts Section with Better Layout -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div id="dept_bar" style="height:420px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div id="cat_pie" style="height:420px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div id="equip_bar" style="height:420px;"></div>
+  </div>
+</div>
+
+{% if figs.get('reason_bar') %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div id="reason_bar" style="height:420px;"></div>
+  </div>
+</div>
+{% endif %}
+
+{% if figs.get('timeline') %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div id="timeline" style="height:520px;"></div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="mb-3">Detailed Stoppages ({{ rowcount }} records)</h5>
+    <div class="table-responsive">
+      <table id="dataTable" class="table table-hover table-sm align-middle">
+        <thead>
+          <tr>
+            <th>Department</th>
+            <th>Equipment</th>
+            <th>Category</th>
+            <th>Responsible</th>
+            <th>Reason</th>
+            <th>Stop</th>
+            <th>Start</th>
+            <th>Duration (h)</th>
+            <th>Economic</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for _, row in filtered_data.iterrows() %}
+            <tr>
+              <td>{{ row.get('DepartmentName', '') }}</td>
+              <td>{{ row.get('EquipmentName', '') }}</td>
+              <td>{{ row.get('CategoryName', '') }}</td>
+              <td>{{ row.get('ResponsibleDepartment', '') }}</td>
+              <td>{{ row.get('ReasonCode', '') }}</td>
+              <td>{% if row.StopDateTime and row.StopDateTime == row.StopDateTime %}{{ row.StopDateTime.strftime('%Y-%m-%d %H:%M') }}{% else %}{% endif %}</td>
+              <td>{% if row.StartDateTime and row.StartDateTime == row.StartDateTime %}{{ row.StartDateTime.strftime('%Y-%m-%d %H:%M') }}{% else %}{% endif %}</td>
+              <td>{{ "%.1f"|format(row.get('DurationAsHours', 0)) }}</td>
+              <td>${{ "{:,.0f}".format(row.get('EconomicValue', 0) or 0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden JSON data for plots -->
+<script type="application/json" id="plots-data">{{ figs|tojson }}</script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  function renderPlot(id, spec){
+    if(!spec || !spec.data) return;
+    try {
+      Plotly.newPlot(id, spec.data, spec.layout, {responsive:true, displayModeBar:false});
+    } catch(e) {
+      console.error('Error rendering plot ' + id + ':', e);
+    }
+  }
+  
+  // Get plots data from JSON script
+  try {
+    var plotsData = JSON.parse(document.getElementById('plots-data').textContent);
+    
+    // Render each plot
+    if(plotsData.dept_bar) {
+      var spec = JSON.parse(plotsData.dept_bar);
+      renderPlot('dept_bar', spec);
+    }
+    
+    if(plotsData.cat_pie) {
+      var spec = JSON.parse(plotsData.cat_pie);
+      renderPlot('cat_pie', spec);
+    }
+    
+    if(plotsData.equip_bar) {
+      var spec = JSON.parse(plotsData.equip_bar);
+      renderPlot('equip_bar', spec);
+    }
+    
+    if(plotsData.reason_bar) {
+      var spec = JSON.parse(plotsData.reason_bar);
+      renderPlot('reason_bar', spec);
+    }
+    
+    if(plotsData.timeline) {
+      var spec = JSON.parse(plotsData.timeline);
+      renderPlot('timeline', spec);
+    }
+    
+  } catch(e) {
+    console.error('Error loading plots data:', e);
+  }
+
+  // Data table init
+  $('#dataTable').DataTable({
+    pageLength: 10,
+    order: [[5, 'desc']],
+    lengthMenu: [10, 25, 50, 100],
+    stateSave: true
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Contact - Sam Valentin{% endblock %}
+
+{% block content %}
+<!-- Contact Header -->
+<section class="contact-header py-5 mt-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold mb-4">Get In Touch</h1>
+                <p class="lead">Let's discuss your next project or opportunity</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="contact-section py-5">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Contact Information -->
+            <div class="col-lg-6">
+                <div class="contact-info">
+                    <h2 class="mb-4">Contact Information</h2>
+                    <p class="mb-4">
+                        I'm always interested in hearing about new projects and opportunities. 
+                        Whether you're a company looking to hire, or you're someone looking for 
+                        a developer to help on a project, I'd love to hear from you.
+                    </p>
+                    
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon me-3">
+                            <i class="fas fa-envelope fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Email</h5>
+                            <p class="mb-0 text-muted">sam.valentin@email.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon me-3">
+                            <i class="fas fa-phone fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Phone</h5>
+                            <p class="mb-0 text-muted">+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon me-3">
+                            <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Location</h5>
+                            <p class="mb-0 text-muted">San Francisco, CA</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon me-3">
+                            <i class="fas fa-clock fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Response Time</h5>
+                            <p class="mb-0 text-muted">Usually within 24 hours</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Links -->
+                    <div class="social-links mt-5">
+                        <h5 class="mb-3">Connect With Me</h5>
+                        <a href="#" class="btn btn-outline-primary me-2 mb-2">
+                            <i class="fab fa-linkedin me-2"></i>LinkedIn
+                        </a>
+                        <a href="#" class="btn btn-outline-primary me-2 mb-2">
+                            <i class="fab fa-github me-2"></i>GitHub
+                        </a>
+                        <a href="#" class="btn btn-outline-primary me-2 mb-2">
+                            <i class="fab fa-twitter me-2"></i>Twitter
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="col-lg-6">
+                <div class="contact-form">
+                    <h2 class="mb-4">Send a Message</h2>
+                    <form id="contactForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            <div class="col-12">
+                                <label for="company" class="form-label">Company/Organization</label>
+                                <input type="text" class="form-control" id="company" name="company">
+                            </div>
+                            <div class="col-12">
+                                <label for="subject" class="form-label">Subject *</label>
+                                <select class="form-select" id="subject" name="subject" required>
+                                    <option value="">Choose...</option>
+                                    <option value="project">New Project</option>
+                                    <option value="job">Job Opportunity</option>
+                                    <option value="consultation">Consultation</option>
+                                    <option value="collaboration">Collaboration</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="budget" class="form-label">Project Budget (if applicable)</label>
+                                <select class="form-select" id="budget" name="budget">
+                                    <option value="">Choose...</option>
+                                    <option value="under-5k">Under $5,000</option>
+                                    <option value="5k-10k">$5,000 - $10,000</option>
+                                    <option value="10k-25k">$10,000 - $25,000</option>
+                                    <option value="25k-50k">$25,000 - $50,000</option>
+                                    <option value="over-50k">Over $50,000</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label">Message *</label>
+                                <textarea class="form-control" id="message" name="message" rows="6" 
+                                          placeholder="Tell me about your project, timeline, and any specific requirements..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
+                                    <label class="form-check-label" for="newsletter">
+                                        I'd like to receive updates about new projects and blog posts
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Success/Error Messages -->
+                    <div id="formMessages" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                What types of projects do you work on?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                I work on a wide range of web development projects including custom websites, web applications, 
+                                e-commerce platforms, APIs, and mobile-responsive designs. I specialize in Python/Flask, 
+                                JavaScript, and modern frontend frameworks.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                What's your typical project timeline?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Project timelines vary depending on complexity and scope. Simple websites typically take 2-4 weeks, 
+                                while complex web applications can take 2-6 months. I provide detailed timelines during our initial consultation.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                Do you provide ongoing maintenance?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes, I offer ongoing maintenance and support packages. This includes security updates, 
+                                content updates, performance optimization, and technical support. We can discuss the 
+                                best maintenance plan for your specific needs.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4">
+                                Can you work with my existing team?
+                            </button>
+                        </h2>
+                        <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Absolutely! I have experience working with development teams, designers, project managers, 
+                                and other stakeholders. I'm comfortable with various project management tools and 
+                                communication workflows.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Contact form handling
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const messagesDiv = document.getElementById('formMessages');
+    
+    // Show loading state
+    messagesDiv.innerHTML = '<div class="alert alert-info">Sending message...</div>';
+    
+    // Simulate form submission (replace with actual backend endpoint)
+    setTimeout(() => {
+        messagesDiv.innerHTML = `
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                Thank you for your message! I'll get back to you within 24 hours.
+            </div>
+        `;
+        this.reset();
+    }, 1500);
+});
+</script>
+{% endblock %}
