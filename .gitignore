@@ -1,6 +1,8 @@
 # Python (Virtual Enviroments)
 venv/
 .venv/
+*/venv/
+*/.venv/
 env/
 bin/
 lib/
