@@ -1,0 +1,20 @@
+# Python (Virtual Enviroments)
+venv/
+.venv/
+env/
+bin/
+lib/
+include/
+__pycache__/
+*.pyc
+
+# IDEs and Editors
+.vscode/
+.idea/
+.DS_Store (Mac)
+Thumbs.db (Windows)
+
+# Kubernetes & Docker
+.kube/
+*.log
+.env
