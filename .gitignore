@@ -3,12 +3,17 @@ venv/
 .venv/
 */venv/
 */.venv/
+**/venv/
+**/.venv/
 env/
 bin/
 lib/
 include/
 __pycache__/
 *.pyc
+**/__pycache__/
+**/*.pyc
+**/site-packages/
 
 # IDEs and Editors
 .vscode/
