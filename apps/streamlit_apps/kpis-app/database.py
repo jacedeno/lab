@@ -2,6 +2,7 @@ import sqlite3
 import json
 from typing import List, Dict
 from pathlib import Path
+from datetime import datetime
 
 class KPIDatabase:
     """Database handler for KPI data persistence"""
@@ -14,6 +15,7 @@ class KPIDatabase:
         self.db_path = db_path
         self.conn = None
         self.create_tables()
+        self.migrate_week_format()
     
     def get_connection(self):
         """Get database connection"""
@@ -55,12 +57,83 @@ class KPIDatabase:
         
         conn.commit()
     
+    def migrate_week_format(self):
+        """Migrate existing weeks from 'Week X' format to 'Week YYWW' format"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Check if migration is needed
+        cursor.execute("SELECT week_name, week_num, week_date FROM weeks_data WHERE week_name LIKE 'Week %'")
+        rows = cursor.fetchall()
+        
+        for row in rows:
+            week_name = row['week_name']
+            week_date = row['week_date']
+            
+            # Skip if already in new format (Week YYWW)
+            if len(week_name.split(' ')[1]) == 4 and week_name.split(' ')[1].isdigit():
+                continue
+            
+            try:
+                # Parse the date and create new week name
+                date_obj = self.parse_date(week_date)
+                if date_obj:
+                    new_week_name = self.generate_week_name(date_obj)
+                    new_week_num = self.generate_week_sort_key(date_obj)
+                    
+                    # Update the record
+                    cursor.execute('''
+                        UPDATE weeks_data 
+                        SET week_name = ?, week_num = ?
+                        WHERE week_name = ?
+                    ''', (new_week_name, new_week_num, week_name))
+            except Exception as e:
+                print(f"Error migrating week {week_name}: {e}")
+        
+        conn.commit()
+    
+    def parse_date(self, date_str: str) -> datetime:
+        """Parse date string in various formats"""
+        formats = ['%m/%d/%Y', '%Y-%m-%d', '%d/%m/%Y', '%m/%d/%y']
+        for fmt in formats:
+            try:
+                return datetime.strptime(date_str, fmt)
+            except:
+                continue
+        return None
+    
+    def get_iso_week_info(self, date_obj: datetime) -> tuple:
+        """Get ISO week number and year for a date.
+        Returns (year, week_number) where year is the ISO week year."""
+        iso_calendar = date_obj.isocalendar()
+        return iso_calendar[0], iso_calendar[1]  # (year, week)
+    
+    def generate_week_name(self, date_obj: datetime) -> str:
+        """Generate week name in format 'Week YYWW' (e.g., Week 2501, Week 2639)"""
+        year, week = self.get_iso_week_info(date_obj)
+        # Use 2-digit year + 2-digit week
+        return f"Week {year % 100:02d}{week:02d}"
+    
+    def generate_week_sort_key(self, date_obj: datetime) -> int:
+        """Generate a sortable key based on date (YYYYWW format)"""
+        year, week = self.get_iso_week_info(date_obj)
+        return year * 100 + week
+    
     def add_week(self, week_data: Dict) -> bool:
         """Add a new week to the database"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
         try:
+            # Parse the date to generate proper week name and sort key
+            date_obj = self.parse_date(week_data['WeekDate'])
+            if date_obj:
+                week_name = self.generate_week_name(date_obj)
+                week_num = self.generate_week_sort_key(date_obj)
+            else:
+                week_name = week_data['Week']
+                week_num = week_data['WeekNum']
+            
             cursor.execute('''
                 INSERT INTO weeks_data (
                     week_name, week_num, week_date, personnel, working_days,
@@ -71,8 +144,8 @@ class KPIDatabase:
                     pmr_completion, unplanned_hrs_total
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
-                week_data['Week'],
-                week_data['WeekNum'],
+                week_name,
+                week_num,
                 week_data['WeekDate'],
                 week_data['Personnel'],
                 week_data['WorkingDays'],
@@ -100,7 +173,7 @@ class KPIDatabase:
             return False
     
     def get_all_weeks(self) -> List[Dict]:
-        """Get all weeks from the database"""
+        """Get all weeks from the database, sorted by week_num (YYYYWW format)"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -162,9 +235,9 @@ class KPIDatabase:
         if self.get_week_count() == 0:
             sample_data = [
                 {
-                    'Week': 'Week 39',
-                    'WeekNum': 39,
-                    'WeekDate': '9/22/2025',
+                    'Week': 'Week 2539',
+                    'WeekNum': 202539,
+                    'WeekDate': '09/22/2025',
                     'Personnel': 20,
                     'WorkingDays': 5,
                     'AvailableHours': 728,
@@ -182,9 +255,9 @@ class KPIDatabase:
                     'UnplannedHrs_Total': 89
                 },
                 {
-                    'Week': 'Week 40',
-                    'WeekNum': 40,
-                    'WeekDate': '9/29/2025',
+                    'Week': 'Week 2540',
+                    'WeekNum': 202540,
+                    'WeekDate': '09/29/2025',
                     'Personnel': 17,
                     'WorkingDays': 5,
                     'AvailableHours': 576,
@@ -202,9 +275,9 @@ class KPIDatabase:
                     'UnplannedHrs_Total': 124
                 },
                 {
-                    'Week': 'Week 41',
-                    'WeekNum': 41,
-                    'WeekDate': '10/6/2025',
+                    'Week': 'Week 2541',
+                    'WeekNum': 202541,
+                    'WeekDate': '10/06/2025',
                     'Personnel': 15,
                     'WorkingDays': 5,
                     'AvailableHours': 496,
