@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
+import calendar
 from PIL import Image
 import json
 from database import KPIDatabase
@@ -78,6 +79,57 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
+# Function to get Monday start date for a given YYWW week number
+def get_week_start_date(week_num):
+    """
+    Get the Monday start date for a week number in YYWW format.
+    Example: 2601 = Week 1 of 2026, starts December 29, 2025
+    """
+    year = 2000 + (week_num // 100)  # e.g., 2601 -> 26 -> 2026
+    week = week_num % 100  # e.g., 2601 -> 01
+    
+    if week < 1 or week > 53:
+        return None
+    
+    # Get January 4th of the year (always in ISO week 1)
+    jan4 = datetime(year, 1, 4)
+    
+    # Find Monday of week 1
+    week1_monday = jan4 - timedelta(days=jan4.weekday())
+    
+    # Calculate Monday of requested week
+    target_monday = week1_monday + timedelta(weeks=int(week - 1))
+    
+    return target_monday
+
+def format_week_num(week_num):
+    """
+    Convert week number to YYWW format for display.
+    Example: 202601 -> 2601, 2601 -> 2601
+    """
+    if week_num > 9999:
+        # Convert from YYYYWW to YYWW
+        return (week_num // 100 % 100) * 100 + (week_num % 100)
+    return week_num
+
+def get_next_week_num(current_week_num):
+    """
+    Calculate the next week number in YYWW format.
+    Example: 2552 -> 2601, 2601 -> 2602
+    """
+    year = current_week_num // 100
+    week = current_week_num % 100
+    
+    # Check if this week exists in the year
+    dec_28 = datetime(2000 + year, 12, 28)
+    max_week = dec_28.isocalendar()[1]
+    
+    if week >= max_week:
+        # Move to next year, week 1
+        return ((year + 1) * 100) + 1
+    else:
+        return current_week_num + 1
+
 # Function to calculate averages
 def calculate_averages(data_list):
     if not data_list:
@@ -116,7 +168,7 @@ previous_week = df_weeks_only.iloc[-2] if len(df_weeks_only) > 1 else None
 
 # Main title with dynamic date
 if latest_week is not None:
-    week_num = latest_week['WeekNum']
+    week_num = format_week_num(latest_week['WeekNum'])
     week_date = latest_week['WeekDate']
     st.title("🔧 Maintenance KPI Dashboard")
     st.markdown(f"### Performance Analysis - Week {week_num} ({week_date})")
@@ -132,78 +184,83 @@ st.sidebar.header("📊 Dashboard Controls")
 # Add new week data section
 with st.sidebar.expander("➕ Add New Week Data", expanded=False):
     st.markdown("**Enter data for new week:**")
+    st.markdown("*Format: YYWW (e.g., 2601 = Week 1 of 2026, 2603 = Week 3 of 2026)*")
     
-    # Check if we've reached the maximum
-    week_count = db.get_week_count()
-    if week_count >= 52:
-        st.warning("⚠️ Maximum 52 weeks reached. Please remove old weeks to add new ones.")
+    # Auto-calculate next week number and date
+    if latest_week is not None:
+        latest_week_num = latest_week['WeekNum']
+        # Handle both YYYYWW (6-digit) and YYWW (4-digit) formats
+        if latest_week_num > 9999:
+            # Convert from YYYYWW to YYWW
+            latest_week_num = (latest_week_num // 100 % 100) * 100 + (latest_week_num % 100)
+        next_week_num = get_next_week_num(latest_week_num)
     else:
-        # Auto-calculate next week number and date
-        if latest_week is not None:
-            next_week_num = latest_week['WeekNum'] + 1
-            if next_week_num > 52:
-                next_week_num = 1
-            # Calculate next week date (7 days after latest)
-            try:
-                latest_date = datetime.strptime(latest_week['WeekDate'], '%m/%d/%Y')
-                next_date = latest_date + timedelta(days=7)
-                next_date_str = next_date.strftime('%m/%d/%Y')
-            except:
-                next_date_str = datetime.now().strftime('%m/%d/%Y')
+        # Default to current ISO week
+        today = datetime.now()
+        iso_cal = today.isocalendar()
+        next_week_num = (iso_cal[0] % 100) * 100 + iso_cal[1]
+    
+    # Calculate the Monday start date for this week
+    next_monday = get_week_start_date(next_week_num)
+    next_date_str = next_monday.strftime('%m/%d/%Y') if next_monday else datetime.now().strftime('%m/%d/%Y')
+    
+    st.markdown(f"**Week Number (YYWW format)**")
+    new_week_num = st.number_input("Example: 2601, 2602, 2603...", min_value=2001, max_value=9953, value=next_week_num, key='new_week_num', label_visibility="collapsed")
+    
+    # Auto-calculate date when week number changes
+    auto_date = get_week_start_date(new_week_num)
+    auto_date_str = auto_date.strftime('%m/%d/%Y') if auto_date else next_date_str
+    
+    new_week_date = st.text_input("Week Start Date (Monday)", value=auto_date_str, key='new_week_date', disabled=True)
+    st.caption("Date auto-calculated from week number")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        new_personnel = st.number_input("Personnel", min_value=1, value=15, key='new_personnel')
+        new_working_days = st.number_input("Working Days", min_value=1, max_value=7, value=5, key='new_working_days')
+        new_available_hrs = st.number_input("Available Hours", min_value=0, value=496, key='new_available_hrs')
+        new_planned_corr = st.number_input("Planned Hrs (Corrective)", min_value=0, value=400, key='new_planned_corr')
+        new_planned_rel = st.number_input("Planned Hrs (Reliability)", min_value=0, value=150, key='new_planned_rel')
+        new_exec_corr = st.number_input("Executed Hrs (Corrective)", min_value=0, value=300, key='new_exec_corr')
+        new_exec_rel = st.number_input("Executed Hrs (Reliability)", min_value=0, value=140, key='new_exec_rel')
+    
+    with col2:
+        new_planning_rate = st.number_input("Planning Rate %", min_value=0, max_value=200, value=100, key='new_planning_rate')
+        new_plan_attain = st.number_input("Plan Attainment %", min_value=0, max_value=100, value=70, key='new_plan_attain')
+        new_plan_attain_corr = st.number_input("Plan Attainment Corrective %", min_value=0, max_value=100, value=65, key='new_plan_attain_corr')
+        new_plan_attain_rel = st.number_input("Plan Attainment Reliability %", min_value=0, max_value=100, value=85, key='new_plan_attain_rel')
+        new_unplanned_pct = st.number_input("Unplanned Jobs %", min_value=0, max_value=100, value=20, key='new_unplanned_pct')
+        new_pmr_pct = st.number_input("PMR %", min_value=0, max_value=100, value=30, key='new_pmr_pct')
+        new_pmr_completion = st.number_input("PMR Completion %", min_value=0, max_value=100, value=80, key='new_pmr_completion')
+        new_unplanned_hrs = st.number_input("Unplanned Hours Total", min_value=0, value=100, key='new_unplanned_hrs')
+    
+    if st.button("Add Week", type="primary"):
+        new_week_data = {
+            'Week': f'Week {new_week_num}',
+            'WeekNum': new_week_num,
+            'WeekDate': auto_date_str,
+            'Personnel': new_personnel,
+            'WorkingDays': new_working_days,
+            'AvailableHours': new_available_hrs,
+            'PlannedHrs_Corrective': new_planned_corr,
+            'PlannedHrs_Reliability': new_planned_rel,
+            'ExecutedHrs_Corrective': new_exec_corr,
+            'ExecutedHrs_Reliability': new_exec_rel,
+            'PlanningRate': new_planning_rate,
+            'PlanAttainment': new_plan_attain,
+            'PlanAttainment_Corrective': new_plan_attain_corr,
+            'PlanAttainment_Reliability': new_plan_attain_rel,
+            'UnplannedJob_Pct': new_unplanned_pct,
+            'PMR_Pct': new_pmr_pct,
+            'PMR_Completion': new_pmr_completion,
+            'UnplannedHrs_Total': new_unplanned_hrs
+        }
+        
+        if db.add_week(new_week_data):
+            st.success(f"✅ Week {new_week_num} added successfully!")
+            st.rerun()
         else:
-            next_week_num = 1
-            next_date_str = datetime.now().strftime('%m/%d/%Y')
-        
-        new_week_num = st.number_input("Week Number", min_value=1, max_value=52, value=next_week_num, key='new_week_num')
-        new_week_date = st.text_input("Week Date (MM/DD/YYYY)", value=next_date_str, key='new_week_date')
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            new_personnel = st.number_input("Personnel", min_value=1, value=15, key='new_personnel')
-            new_working_days = st.number_input("Working Days", min_value=1, max_value=7, value=5, key='new_working_days')
-            new_available_hrs = st.number_input("Available Hours", min_value=0, value=496, key='new_available_hrs')
-            new_planned_corr = st.number_input("Planned Hrs (Corrective)", min_value=0, value=400, key='new_planned_corr')
-            new_planned_rel = st.number_input("Planned Hrs (Reliability)", min_value=0, value=150, key='new_planned_rel')
-            new_exec_corr = st.number_input("Executed Hrs (Corrective)", min_value=0, value=300, key='new_exec_corr')
-            new_exec_rel = st.number_input("Executed Hrs (Reliability)", min_value=0, value=140, key='new_exec_rel')
-        
-        with col2:
-            new_planning_rate = st.number_input("Planning Rate %", min_value=0, max_value=200, value=100, key='new_planning_rate')
-            new_plan_attain = st.number_input("Plan Attainment %", min_value=0, max_value=100, value=70, key='new_plan_attain')
-            new_plan_attain_corr = st.number_input("Plan Attainment Corrective %", min_value=0, max_value=100, value=65, key='new_plan_attain_corr')
-            new_plan_attain_rel = st.number_input("Plan Attainment Reliability %", min_value=0, max_value=100, value=85, key='new_plan_attain_rel')
-            new_unplanned_pct = st.number_input("Unplanned Jobs %", min_value=0, max_value=100, value=20, key='new_unplanned_pct')
-            new_pmr_pct = st.number_input("PMR %", min_value=0, max_value=100, value=30, key='new_pmr_pct')
-            new_pmr_completion = st.number_input("PMR Completion %", min_value=0, max_value=100, value=80, key='new_pmr_completion')
-            new_unplanned_hrs = st.number_input("Unplanned Hours Total", min_value=0, value=100, key='new_unplanned_hrs')
-        
-        if st.button("Add Week", type="primary"):
-            new_week_data = {
-                'Week': f'Week {new_week_num}',
-                'WeekNum': new_week_num,
-                'WeekDate': new_week_date,
-                'Personnel': new_personnel,
-                'WorkingDays': new_working_days,
-                'AvailableHours': new_available_hrs,
-                'PlannedHrs_Corrective': new_planned_corr,
-                'PlannedHrs_Reliability': new_planned_rel,
-                'ExecutedHrs_Corrective': new_exec_corr,
-                'ExecutedHrs_Reliability': new_exec_rel,
-                'PlanningRate': new_planning_rate,
-                'PlanAttainment': new_plan_attain,
-                'PlanAttainment_Corrective': new_plan_attain_corr,
-                'PlanAttainment_Reliability': new_plan_attain_rel,
-                'UnplannedJob_Pct': new_unplanned_pct,
-                'PMR_Pct': new_pmr_pct,
-                'PMR_Completion': new_pmr_completion,
-                'UnplannedHrs_Total': new_unplanned_hrs
-            }
-            
-            if db.add_week(new_week_data):
-                st.success(f"✅ Week {new_week_num} added successfully!")
-                st.rerun()
-            else:
-                st.error(f"❌ Week {new_week_num} already exists or could not be added.")
+            st.error(f"❌ Week {new_week_num} already exists or could not be added.")
 
 # Data management section
 with st.sidebar.expander("🗑️ Manage Weeks", expanded=False):
@@ -248,7 +305,7 @@ df_filtered = df_display[df_display['Week'].isin(week_filter)]
 
 # Main KPI cards - always show latest week
 if latest_week is not None:
-    st.markdown(f"## 📈 Key Performance Indicators - Week {latest_week['WeekNum']}")
+    st.markdown(f"## 📈 Key Performance Indicators - Week {format_week_num(latest_week['WeekNum'])}")
 
     col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -678,7 +735,7 @@ display_df.columns = ['Week', 'Date', 'Personnel', 'Available Hrs', 'Planning Ra
                       'Plan Attainment %', 'Corrective %', 'Reliability %', 
                       'Unplanned %', 'PMR %', 'PMR Completion %']
 
-st.dataframe(display_df, width='stretch', hide_index=True)
+st.dataframe(display_df, use_container_width=True, hide_index=True)
 
 st.markdown("---")
 
