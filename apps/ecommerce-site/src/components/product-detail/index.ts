@@ -1,0 +1,8 @@
+export { default as ImageGallery } from './ImageGallery'
+export { default as QuantitySelector } from './QuantitySelector'
+export { default as AddToCartButton } from './AddToCartButton'
+export { default as ProductInfo } from './ProductInfo'
+export { default as SpecsTable } from './SpecsTable'
+export { default as ReviewCard } from './ReviewCard'
+export { default as ReviewSection } from './ReviewSection'
+export { default as RelatedProducts } from './RelatedProducts'
