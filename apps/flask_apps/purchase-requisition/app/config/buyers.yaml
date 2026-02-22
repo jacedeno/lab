@@ -1,0 +1,20 @@
+buyers:
+  - email: diane.christensen@capitolaggregates.com
+    name: Diane Christensen
+    department: Procurement
+
+  - email: patrick.mcmahan@capitolaggregates.com
+    name: Patrick McMahan
+    department: Purchasing
+
+  - email: michael.castillo@capitolaggregates.com
+    name: Michael Castillo
+    department: Procurement
+
+  - email: daniel.wyatt@capitolaggregates.com
+    name: Daniel Wyatt
+    department: Purchasing
+
+  - email: jose.cedeno@capitolaggregates.com
+    name: Jose Cedeno
+    department: Procurement

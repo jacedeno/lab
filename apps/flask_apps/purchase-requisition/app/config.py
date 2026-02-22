@@ -1,4 +1,5 @@
 import os
+from app.config.buyers_loader import load_buyers
 
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -12,11 +13,7 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    BUYER_EMAILS = [
-        e.strip().lower()
-        for e in os.environ.get('BUYER_EMAILS', '').split(',')
-        if e.strip()
-    ]
+    BUYER_EMAILS = load_buyers()
     DEV_USER_EMAIL = os.environ.get('DEV_USER_EMAIL', '')
 
     # SMTP (stubbed for now)
