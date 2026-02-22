@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My Requisitions - Capitol Aggregates{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">My Purchase Requisitions</h1>
+    <a href="{{ url_for('requester.new_pr') }}"
+       class="bg-ca-green text-white px-4 py-2 rounded text-sm font-semibold
+              hover:bg-green-800 transition-colors">
+        + New PR
+    </a>
+</div>
+
+{% if prs %}
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">PR #</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Title</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Type</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Need By</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Submitted</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for pr in prs %}
+            <tr class="hover:bg-gray-50 cursor-pointer"
+                onclick="window.location='{{ url_for('requester.view_pr', pr_id=pr.id) }}'">
+                <td class="px-4 py-3 font-mono text-ca-green font-semibold">{{ pr.pr_number }}</td>
+                <td class="px-4 py-3 text-gray-800">{{ pr.title }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ pr.purchase_type }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ pr.need_by_date.strftime('%b %d, %Y') }}</td>
+                <td class="px-4 py-3">
+                    {% if pr.status == 'Pending' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">{{ pr.status }}</span>
+                    {% elif pr.status == 'Approved' or pr.status == 'Completed' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">{{ pr.status }}</span>
+                    {% elif pr.status == 'Rejected' %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">{{ pr.status }}</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">{{ pr.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ pr.request_date.strftime('%b %d, %Y %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center py-16 bg-white border border-gray-200 rounded-lg">
+    <p class="text-gray-400 mb-4">You haven't submitted any purchase requisitions yet.</p>
+    <a href="{{ url_for('requester.new_pr') }}"
+       class="bg-ca-green text-white px-6 py-2 rounded text-sm font-semibold
+              hover:bg-green-800 transition-colors">
+        Create Your First PR
+    </a>
+</div>
+{% endif %}
+{% endblock %}

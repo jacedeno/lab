@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pr-app-config
+  namespace: purchase-requisition
+  labels:
+    app.kubernetes.io/name: purchase-requisition
+data:
+  FLASK_ENV: "production"
+  # Comma-separated list of buyer emails
+  BUYER_EMAILS: "buyer1@capitol.com,buyer2@capitol.com"
+  # SMTP (uncomment when ready)
+  # SMTP_HOST: "smtp.example.com"
+  # SMTP_PORT: "587"

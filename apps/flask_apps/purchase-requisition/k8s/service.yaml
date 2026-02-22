@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pr-app
+  namespace: purchase-requisition
+  labels:
+    app.kubernetes.io/name: purchase-requisition
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: purchase-requisition
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http

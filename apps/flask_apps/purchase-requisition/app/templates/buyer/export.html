@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Export Requisitions - Capitol Aggregates{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Export Requisitions</h1>
+
+    <form method="POST" action="{{ url_for('buyer.export_download') }}"
+          class="bg-white border border-gray-200 rounded-lg p-6">
+        <div class="space-y-4">
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status"
+                        class="w-full border border-gray-300 rounded px-3 py-2 text-sm
+                               focus:outline-none focus:ring-2 focus:ring-ca-green focus:border-transparent">
+                    <option value="">All Statuses</option>
+                    {% for s in statuses %}
+                    <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date Range -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                    <input type="date" name="date_from"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-ca-green focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                    <input type="date" name="date_to"
+                           class="w-full border border-gray-300 rounded px-3 py-2 text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-ca-green focus:border-transparent">
+                </div>
+            </div>
+
+            <!-- Format -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="format" value="xlsx" checked
+                               class="text-ca-green focus:ring-ca-green">
+                        <span class="text-sm text-gray-700">Excel (.xlsx)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="radio" name="format" value="csv"
+                               class="text-ca-green focus:ring-ca-green">
+                        <span class="text-sm text-gray-700">CSV</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <button type="submit"
+                    class="bg-ca-green text-white px-6 py-2 rounded text-sm font-semibold
+                           hover:bg-green-800 transition-colors">
+                Download Export
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
