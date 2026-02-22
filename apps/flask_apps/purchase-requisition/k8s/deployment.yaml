@@ -22,9 +22,9 @@ spec:
     spec:
       containers:
         - name: pr-app
+          # Update to your registry, e.g.: docker.io/youruser/purchase-requisition:v1.0.0
           image: purchase-requisition:latest
-          # Change to your registry, e.g.:
-          # image: registry.capitol.com/purchase-requisition:v1.0.0
+          imagePullPolicy: Never  # For local k3s development; change for remote registries
           ports:
             - containerPort: 8000
               protocol: TCP
