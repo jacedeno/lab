@@ -4,11 +4,19 @@ kind: Kustomization
 namespace: purchase-requisition
 
 resources:
+  # Namespace
   - namespace.yaml
+
+  # PostgreSQL (CloudNativePG)
+  - postgres/credentials.yaml
+  - postgres/cluster.yaml
+
+  # Application
   - configmap.yaml
   - secret.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml
-  # Run migration separately:
+
+  # Run migration separately after cluster is ready:
   #   kubectl apply -f k8s/migration-job.yaml

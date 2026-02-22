@@ -1,0 +1,74 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pr-db
+  namespace: purchase-requisition
+  labels:
+    app.kubernetes.io/name: purchase-requisition
+    app.kubernetes.io/component: database
+spec:
+  instances: 3
+
+  # PostgreSQL 16
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.6-bookworm
+
+  # ── Bootstrap: create database and app user ──
+  bootstrap:
+    initdb:
+      database: purchase_requisition
+      owner: pr_user
+      secret:
+        name: pr-db-credentials
+
+  # ── Storage: Longhorn for HA across nodes ──
+  storage:
+    size: 5Gi
+    storageClass: longhorn
+
+  # ── Resource limits: sized for HP EliteDesk Mini PCs ──
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+
+  # ── High Availability ──
+  primaryUpdateStrategy: unsupervised
+  minSyncReplicas: 1
+  maxSyncReplicas: 1
+
+  # ── Monitoring: Prometheus metrics ──
+  monitoring:
+    enablePodMonitor: true
+
+  # ── Anti-affinity: spread instances across nodes ──
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+
+  # ── Backup (optional — uncomment when S3/MinIO is available) ──
+  # backup:
+  #   barmanObjectStore:
+  #     destinationPath: "s3://your-bucket/pr-db/"
+  #     endpointURL: "https://minio.your-domain.com"
+  #     s3Credentials:
+  #       accessKeyId:
+  #         name: pr-db-backup-creds
+  #         key: ACCESS_KEY_ID
+  #       secretAccessKey:
+  #         name: pr-db-backup-creds
+  #         key: ACCESS_SECRET_KEY
+  #   retentionPolicy: "30d"
+
+  postgresql:
+    parameters:
+      # Tuned for EliteDesk Mini PCs with limited RAM
+      shared_buffers: "128MB"
+      effective_cache_size: "256MB"
+      work_mem: "4MB"
+      maintenance_work_mem: "64MB"
+      max_connections: "100"
+      log_statement: "ddl"
+      log_min_duration_statement: "1000"
