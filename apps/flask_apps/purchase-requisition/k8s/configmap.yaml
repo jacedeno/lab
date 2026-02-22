@@ -7,8 +7,7 @@ metadata:
     app.kubernetes.io/name: purchase-requisition
 data:
   FLASK_ENV: "production"
-  # Comma-separated list of buyer emails
-  BUYER_EMAILS: "buyer1@capitol.com,buyer2@capitol.com"
   # SMTP (uncomment when ready)
   # SMTP_HOST: "smtp.example.com"
   # SMTP_PORT: "587"
+  # NOTE: BUYER_EMAILS is now managed via app/config/buyers.yaml (no env var needed)
