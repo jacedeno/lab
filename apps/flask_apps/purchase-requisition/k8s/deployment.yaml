@@ -24,7 +24,7 @@ spec:
         - name: pr-app
           # Update this with your registry endpoint after building
           # Default: docker-registry.docker-registry.svc.cluster.local:5000/purchase-requisition:v1.0.0
-          image: docker-registry.docker-registry.svc.cluster.local:5000/purchase-requisition:v1.0.0
+          image: docker-registry.docker-registry.svc.cluster.local:5000/purchase-requisition:v1.0.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -38,23 +38,23 @@ spec:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 30
-            timeoutSeconds: 5
+            timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /health
               port: 8000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 15
             periodSeconds: 10
-            timeoutSeconds: 3
+            timeoutSeconds: 10
             failureThreshold: 3
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               cpu: 500m
-              memory: 256Mi
+              memory: 512Mi
       restartPolicy: Always
