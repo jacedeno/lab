@@ -35,7 +35,7 @@
             </div>
             <div>
                 <dt class="text-gray-500">Request Date</dt>
-                <dd class="text-gray-800">{{ pr.request_date.strftime('%b %d, %Y at %H:%M UTC') }}</dd>
+                <dd class="text-gray-800">{{ (pr.request_date|to_central).strftime('%b %d, %Y at %H:%M CST') }}</dd>
             </div>
             <div>
                 <dt class="text-gray-500">Need-by Date</dt>
@@ -176,7 +176,7 @@
             <div class="mb-3 pb-3 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-sm font-medium text-gray-700">{{ comment.author_email }}</span>
-                    <span class="text-xs text-gray-400">{{ comment.created_at.strftime('%b %d, %Y %H:%M') }}</span>
+                    <span class="text-xs text-gray-400">{{ (comment.created_at|to_central).strftime('%b %d, %Y %H:%M') }}</span>
                 </div>
                 <p class="text-sm text-gray-600">{{ comment.body }}</p>
             </div>

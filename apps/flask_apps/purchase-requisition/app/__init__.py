@@ -1,11 +1,15 @@
 import logging
 import os
 import sys
+from datetime import timezone
+from zoneinfo import ZoneInfo
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from prometheus_flask_exporter import PrometheusMetrics
+
+CENTRAL_TZ = ZoneInfo('America/Chicago')
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -53,5 +57,14 @@ def create_app(config_name=None):
     app.register_blueprint(main_bp)
     app.register_blueprint(requester_bp, url_prefix='/pr')
     app.register_blueprint(buyer_bp, url_prefix='/buyer')
+
+    @app.template_filter('to_central')
+    def to_central_filter(dt):
+        """Convert a UTC datetime to US Central time."""
+        if dt is None:
+            return ''
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(CENTRAL_TZ)
 
     return app

@@ -108,7 +108,7 @@
                         {% endif %}
                     </div>
                 </td>
-                <td class="px-4 py-3 text-gray-500 text-xs">{{ pr.request_date.strftime('%b %d, %Y') }}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ (pr.request_date|to_central).strftime('%b %d, %Y') }}</td>
             </tr>
             {% endfor %}
         </tbody>
