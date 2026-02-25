@@ -165,8 +165,8 @@ def export_download():
                 'Quantity': item.quantity,
                 'Description': item.description,
                 'Part Number': item.part_number or '',
-                'Unit Price': item.price,
-                'Subtotal': item.quantity * item.price,
+                'Unit Price': item.price if item.price is not None else 'Unknown',
+                'Subtotal': item.quantity * item.price if item.price is not None else '—',
             })
 
     buf = io.BytesIO()

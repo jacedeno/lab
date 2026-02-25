@@ -50,10 +50,12 @@ def create_app(config_name=None):
     from app import models  # noqa: F401
 
     # Blueprints
+    from app.blueprints.auth import auth_bp
     from app.blueprints.main import main_bp
     from app.blueprints.requester import requester_bp
     from app.blueprints.buyer import buyer_bp
 
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
     app.register_blueprint(requester_bp, url_prefix='/pr')
     app.register_blueprint(buyer_bp, url_prefix='/buyer')

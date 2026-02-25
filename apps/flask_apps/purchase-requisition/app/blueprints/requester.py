@@ -1,18 +1,22 @@
+import io
+import os
 import re
 from datetime import date
 
 from flask import (
     Blueprint, render_template, request, redirect,
-    url_for, flash, g, abort,
+    url_for, flash, g, abort, send_file,
 )
 
 from app import db
-from app.models import PurchaseRequisition, RequisitionItem
+from app.models import PurchaseRequisition, RequisitionItem, Attachment
 
 requester_bp = Blueprint('requester', __name__)
 
 COST_CODE_REGEX = re.compile(r'^\d{5}-\d{6}$')
 VALID_PURCHASE_TYPES = {'Service', 'Material', 'Service-Material'}
+ALLOWED_EXTENSIONS = {'.pdf', '.jpg', '.jpeg', '.png'}
+MAX_TOTAL_UPLOAD = 2 * 1024 * 1024  # 2MB
 
 
 def _parse_items(form):
@@ -47,9 +51,7 @@ def _parse_items(form):
         if not desc:
             errors.append(f'Item {row}: Description is required.')
 
-        if not price_str:
-            errors.append(f'Item {row}: Price is required.')
-        else:
+        if price_str:
             try:
                 price = float(price_str)
                 if price < 0:
@@ -131,6 +133,23 @@ def new_pr():
     if not items_data:
         errors.append('At least one item is required.')
 
+    # --- Attachment validation ---
+    uploaded_files = request.files.getlist('attachments')
+    valid_files = []
+    total_size = 0
+    for f in uploaded_files:
+        if not f or not f.filename:
+            continue
+        ext = os.path.splitext(f.filename)[1].lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            errors.append(f'File "{f.filename}": type not allowed. Accepted: PDF, JPG, PNG.')
+            continue
+        data = f.read()
+        total_size += len(data)
+        valid_files.append((f.filename, f.content_type or 'application/octet-stream', data))
+    if total_size > MAX_TOTAL_UPLOAD:
+        errors.append(f'Total attachment size exceeds 2 MB ({total_size / (1024*1024):.1f} MB uploaded).')
+
     if errors:
         for e in errors:
             flash(e, 'error')
@@ -165,6 +184,18 @@ def new_pr():
                 price=item['price'],
             ))
 
+        for filename, content_type, data in valid_files:
+            db.session.add(Attachment(
+                requisition_id=pr.id,
+                filename=filename,
+                content_type=content_type,
+                data=data,
+                size=len(data),
+            ))
+
+        if valid_files:
+            pr.is_quote_attached = True
+
         db.session.commit()
         flash(f'Purchase Requisition #{pr.pr_number} created successfully.', 'success')
         return redirect(url_for('requester.view_pr', pr_id=pr.id))
@@ -193,3 +224,17 @@ def view_pr(pr_id):
     if not g.is_buyer and pr.requester_email != g.current_user_email:
         abort(403)
     return render_template('requester/view_pr.html', pr=pr)
+
+
+@requester_bp.route('/<int:pr_id>/attachment/<int:att_id>')
+def download_attachment(pr_id, att_id):
+    pr = PurchaseRequisition.query.get_or_404(pr_id)
+    if not g.is_buyer and pr.requester_email != g.current_user_email:
+        abort(403)
+    attachment = Attachment.query.filter_by(id=att_id, requisition_id=pr_id).first_or_404()
+    return send_file(
+        io.BytesIO(attachment.data),
+        mimetype=attachment.content_type,
+        as_attachment=True,
+        download_name=attachment.filename,
+    )

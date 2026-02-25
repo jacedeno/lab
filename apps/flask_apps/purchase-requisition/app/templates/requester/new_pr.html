@@ -5,7 +5,7 @@
 <div class="max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">New Purchase Requisition</h1>
 
-    <form method="POST" action="{{ url_for('requester.new_pr') }}" id="pr-form" novalidate>
+    <form method="POST" action="{{ url_for('requester.new_pr') }}" id="pr-form" novalidate enctype="multipart/form-data">
 
         <!-- ─── Header Fields ─── -->
         <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
@@ -169,13 +169,13 @@
                         </div>
                         <div class="col-span-2">
                             {% if loop.first %}
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Unit Price *</label>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Unit Price</label>
                             {% endif %}
                             <input type="number" name="items-{{ loop.index0 }}-price"
                                    value="{{ item.price if item.price is not none else '' }}"
-                                   min="0" step="0.01" placeholder="0.00"
+                                   min="0" step="0.01" placeholder="Unknown"
                                    class="w-full border border-gray-300 rounded px-2 py-2 text-sm
-                                          focus:outline-none focus:ring-2 focus:ring-ca-green" required>
+                                          focus:outline-none focus:ring-2 focus:ring-ca-green">
                         </div>
                         <div class="col-span-1 flex justify-center">
                             <button type="button" onclick="removeItem(this)"
@@ -207,10 +207,10 @@
                                           focus:outline-none focus:ring-2 focus:ring-ca-green">
                         </div>
                         <div class="col-span-2">
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Unit Price *</label>
-                            <input type="number" name="items-0-price" min="0" step="0.01" placeholder="0.00"
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Unit Price</label>
+                            <input type="number" name="items-0-price" min="0" step="0.01" placeholder="Unknown"
                                    class="w-full border border-gray-300 rounded px-2 py-2 text-sm
-                                          focus:outline-none focus:ring-2 focus:ring-ca-green" required>
+                                          focus:outline-none focus:ring-2 focus:ring-ca-green">
                         </div>
                         <div class="col-span-1 flex justify-center">
                             <button type="button" onclick="removeItem(this)"
@@ -223,6 +223,22 @@
             <p id="no-items-msg" class="text-sm text-gray-400 italic hidden">
                 No items added. Click "+ Add Item" above.
             </p>
+        </div>
+
+        <!-- ─── Attachments ─── -->
+        <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-semibold text-ca-green mb-4">Attachments</h2>
+            <label for="attachments" class="block text-sm font-medium text-gray-700 mb-1">Upload Files</label>
+            <input type="file" id="attachments" name="attachments" multiple
+                   accept=".pdf,.jpg,.jpeg,.png"
+                   class="w-full border border-gray-300 rounded px-3 py-2 text-sm
+                          focus:outline-none focus:ring-2 focus:ring-ca-green focus:border-transparent">
+            <p class="text-xs text-gray-500 mt-1">Upload quotes, receipts, or images. Max 2 MB total. Accepted: PDF, JPG, PNG.</p>
+            <div id="file-list" class="mt-2 text-sm text-gray-600 hidden">
+                <p class="font-medium text-gray-700">Selected files:</p>
+                <ul id="file-list-items" class="list-disc list-inside"></ul>
+                <p id="file-total-size" class="text-xs text-gray-500 mt-1"></p>
+            </div>
         </div>
 
         <!-- ─── Submit ─── -->
@@ -269,9 +285,9 @@
                               focus:outline-none focus:ring-2 focus:ring-ca-green">
             </div>
             <div class="col-span-2">
-                <input type="number" name="items-${nextIndex}-price" min="0" step="0.01" placeholder="0.00"
+                <input type="number" name="items-${nextIndex}-price" min="0" step="0.01" placeholder="Unknown"
                        class="w-full border border-gray-300 rounded px-2 py-2 text-sm
-                              focus:outline-none focus:ring-2 focus:ring-ca-green" required>
+                              focus:outline-none focus:ring-2 focus:ring-ca-green">
             </div>
             <div class="col-span-1 flex justify-center">
                 <button type="button" onclick="removeItem(this)"
@@ -295,6 +311,30 @@
         const msg = document.getElementById('no-items-msg');
         msg.classList.toggle('hidden', rows.length > 0);
     }
+
+    // Show selected files and cumulative size
+    document.getElementById('attachments').addEventListener('change', function () {
+        const list = document.getElementById('file-list');
+        const items = document.getElementById('file-list-items');
+        const sizeEl = document.getElementById('file-total-size');
+        items.innerHTML = '';
+        let total = 0;
+        for (const f of this.files) {
+            total += f.size;
+            const li = document.createElement('li');
+            li.textContent = `${f.name} (${(f.size / 1024).toFixed(1)} KB)`;
+            items.appendChild(li);
+        }
+        if (this.files.length > 0) {
+            list.classList.remove('hidden');
+            const mb = (total / (1024 * 1024)).toFixed(2);
+            sizeEl.textContent = `Total: ${mb} MB` + (total > 2 * 1024 * 1024 ? ' — exceeds 2 MB limit!' : '');
+            sizeEl.classList.toggle('text-red-600', total > 2 * 1024 * 1024);
+            sizeEl.classList.toggle('text-gray-500', total <= 2 * 1024 * 1024);
+        } else {
+            list.classList.add('hidden');
+        }
+    });
 
     // Set min date for need_by_date to tomorrow
     (function () {

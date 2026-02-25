@@ -29,7 +29,12 @@
             <tr class="hover:bg-gray-50 cursor-pointer"
                 onclick="window.location='{{ url_for('requester.view_pr', pr_id=pr.id) }}'">
                 <td class="px-4 py-3 font-mono text-ca-green font-semibold">{{ pr.pr_number }}</td>
-                <td class="px-4 py-3 text-gray-800">{{ pr.title }}</td>
+                <td class="px-4 py-3 text-gray-800">
+                    {{ pr.title }}
+                    {% if pr.attachments %}
+                        <span class="text-blue-400 ml-1" title="{{ pr.attachments|length }} attachment{{ 's' if pr.attachments|length != 1 else '' }}">&#128206;</span>
+                    {% endif %}
+                </td>
                 <td class="px-4 py-3 text-gray-600">{{ pr.purchase_type }}</td>
                 <td class="px-4 py-3 text-gray-600">{{ pr.need_by_date.strftime('%b %d, %Y') }}</td>
                 <td class="px-4 py-3">

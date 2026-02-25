@@ -106,6 +106,9 @@
                         {% if pr.is_outage %}
                             <span class="inline-block w-2 h-2 rounded-full bg-orange-500" title="Outage"></span>
                         {% endif %}
+                        {% if pr.attachments %}
+                            <span class="inline-block w-2 h-2 rounded-full bg-blue-500" title="{{ pr.attachments|length }} attachment{{ 's' if pr.attachments|length != 1 else '' }}"></span>
+                        {% endif %}
                     </div>
                 </td>
                 <td class="px-4 py-3 text-gray-500 text-xs">{{ (pr.request_date|to_central).strftime('%b %d, %Y') }}</td>

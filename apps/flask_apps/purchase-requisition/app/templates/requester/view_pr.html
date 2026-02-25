@@ -99,24 +99,37 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-                {% set ns = namespace(total=0) %}
+                {% set ns = namespace(total=0, has_unknown=false) %}
                 {% for item in pr.items %}
-                {% set subtotal = item.quantity * item.price %}
-                {% set ns.total = ns.total + subtotal %}
+                {% if item.price is not none %}
+                    {% set subtotal = item.quantity * item.price %}
+                    {% set ns.total = ns.total + subtotal %}
+                {% else %}
+                    {% set ns.has_unknown = true %}
+                {% endif %}
                 <tr>
                     <td class="px-4 py-2 text-gray-400">{{ loop.index }}</td>
                     <td class="px-4 py-2 text-gray-800">{{ item.description }}</td>
                     <td class="px-4 py-2 text-gray-600 font-mono">{{ item.part_number or '—' }}</td>
                     <td class="px-4 py-2 text-right text-gray-800">{{ item.quantity }}</td>
+                    {% if item.price is not none %}
                     <td class="px-4 py-2 text-right text-gray-800">${{ '%.2f' | format(item.price) }}</td>
-                    <td class="px-4 py-2 text-right text-gray-800 font-medium">${{ '%.2f' | format(subtotal) }}</td>
+                    <td class="px-4 py-2 text-right text-gray-800 font-medium">${{ '%.2f' | format(item.quantity * item.price) }}</td>
+                    {% else %}
+                    <td class="px-4 py-2 text-right text-gray-400 italic">Unknown</td>
+                    <td class="px-4 py-2 text-right text-gray-400 italic">—</td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot class="border-t-2 border-gray-200">
                 <tr>
                     <td colspan="5" class="px-4 py-3 text-right font-semibold text-gray-700">Total</td>
+                    {% if ns.has_unknown %}
+                    <td class="px-4 py-3 text-right font-bold text-ca-green text-base">${{ '%.2f' | format(ns.total) }}+</td>
+                    {% else %}
                     <td class="px-4 py-3 text-right font-bold text-ca-green text-base">${{ '%.2f' | format(ns.total) }}</td>
+                    {% endif %}
                 </tr>
             </tfoot>
         </table>
@@ -124,6 +137,32 @@
         <p class="text-gray-400 italic">No items.</p>
         {% endif %}
     </div>
+
+    <!-- Attachments Card -->
+    {% if pr.attachments %}
+    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+        <h2 class="text-lg font-semibold text-ca-green mb-4">Attachments</h2>
+        <ul class="divide-y divide-gray-100">
+            {% for att in pr.attachments %}
+            <li class="flex items-center justify-between py-2">
+                <div class="flex items-center space-x-3">
+                    {% if att.content_type == 'application/pdf' %}
+                    <span class="text-red-500 text-lg">&#128196;</span>
+                    {% else %}
+                    <span class="text-blue-500 text-lg">&#128247;</span>
+                    {% endif %}
+                    <span class="text-sm text-gray-800">{{ att.filename }}</span>
+                    <span class="text-xs text-gray-400">({{ (att.size / 1024)|round(1) }} KB)</span>
+                </div>
+                <a href="{{ url_for('requester.download_attachment', pr_id=pr.id, att_id=att.id) }}"
+                   class="text-sm text-ca-green hover:underline font-medium">
+                    Download
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
     {% if is_buyer %}
     <!-- Buyer Actions Card -->

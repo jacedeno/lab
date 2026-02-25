@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+
 from app.config.buyers_loader import load_buyers
 
 
@@ -15,6 +17,9 @@ class Config:
 
     BUYER_EMAILS = load_buyers()
     DEV_USER_EMAIL = os.environ.get('DEV_USER_EMAIL', '')
+    RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+    MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB
 
     # SMTP (stubbed for now)
     SMTP_HOST = os.environ.get('SMTP_HOST', '')

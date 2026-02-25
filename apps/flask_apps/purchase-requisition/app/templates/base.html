@@ -29,6 +29,7 @@
                          alt="Capitol Aggregates" class="h-10 w-auto">
                     <span class="text-ca-green font-bold text-lg">Purchase Requisition</span>
                 </div>
+                {% if current_user_email %}
                 <div class="flex items-center space-x-4">
                     {% if is_buyer %}
                     <a href="{{ url_for('buyer.dashboard') }}"
@@ -42,7 +43,10 @@
                        class="bg-ca-green text-white font-semibold px-4 py-2 rounded
                               hover:bg-green-800 transition-colors text-sm">New PR</a>
                     <span class="text-gray-400 text-xs">{{ current_user_email }}</span>
+                    <a href="{{ url_for('auth.logout') }}"
+                       class="text-gray-400 hover:text-red-500 transition-colors text-xs">Logout</a>
                 </div>
+                {% endif %}
             </div>
         </div>
     </nav>

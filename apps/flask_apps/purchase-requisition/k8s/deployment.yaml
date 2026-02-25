@@ -24,7 +24,7 @@ spec:
         - name: pr-app
           # Update this with your registry endpoint after building
           # Default: docker-registry.docker-registry.svc.cluster.local:5000/purchase-requisition:v1.0.0
-          image: docker-registry.docker-registry.svc.cluster.local:5000/purchase-requisition:v1.1.0
+          image: docker-registry.docker-registry.svc.cluster.local:5000/purchase-requisition:v1.3.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
