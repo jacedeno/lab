@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA Shuttle IMU Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="container">
+        <div id="viewport">
+            <div id="status-bar">
+                <span id="status-dot" class="dot disconnected"></span>
+                <span id="status-text">Disconnected</span>
+                <span id="hz-display">0 Hz</span>
+            </div>
+        </div>
+        <div id="telemetry">
+            <div id="quaternion-panel" class="panel">
+                <h3>Quaternion</h3>
+                <div class="quat-grid">
+                    <div class="quat-item"><span class="label">W</span><span id="q-w">0.0000</span></div>
+                    <div class="quat-item"><span class="label">X</span><span id="q-x">0.0000</span></div>
+                    <div class="quat-item"><span class="label">Y</span><span id="q-y">0.0000</span></div>
+                    <div class="quat-item"><span class="label">Z</span><span id="q-z">0.0000</span></div>
+                </div>
+            </div>
+            <div id="charts-panel" class="panel">
+                <h3>Accelerometer (m/s²)</h3>
+                <canvas id="accel-chart" width="400" height="80"></canvas>
+                <h3>Gyroscope (rad/s)</h3>
+                <canvas id="gyro-chart" width="400" height="80"></canvas>
+            </div>
+            <div id="status-panel" class="panel">
+                <h3>Status</h3>
+                <div class="status-row"><span class="label">WiFi</span><span id="wifi-status">Connected</span></div>
+                <div class="status-row"><span class="label">WS</span><span id="ws-status">--</span></div>
+                <div class="status-row"><span class="label">Rate</span><span id="rate-status">--</span></div>
+                <div class="status-row"><span class="label">Frames</span><span id="frame-count">0</span></div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

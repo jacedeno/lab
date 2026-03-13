@@ -1,0 +1,146 @@
+<h2>NASA Shuttle Dashboard - Final Design</h2>
+<p class="subtitle">Layout B: 3D viewport on top (70%), telemetry strip below (30%)</p>
+
+<div class="mockup" style="max-width: 800px; margin: 0 auto;">
+  <div class="mockup-header">http://192.168.4.1 — NASA Shuttle IMU Dashboard</div>
+  <div class="mockup-body" style="background: #0a0a1a; padding: 0; overflow: hidden;">
+
+    <!-- 3D Viewport (70%) -->
+    <div style="height: 280px; background: #0d1117; position: relative; display: flex; align-items: center; justify-content: center; border-bottom: 2px solid #00ff99;">
+      <!-- Grid lines -->
+      <div style="position: absolute; inset: 0; opacity: 0.15;">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2332" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)"/>
+        </svg>
+      </div>
+
+      <!-- Shuttle representation -->
+      <div style="position: relative; transform: perspective(600px) rotateX(-15deg) rotateY(25deg) rotateZ(-5deg);">
+        <!-- Fuselage -->
+        <div style="width: 180px; height: 40px; background: linear-gradient(to bottom, #ddd, #aaa); border-radius: 4px; position: relative; box-shadow: 0 4px 12px rgba(0,255,153,0.1);">
+          <!-- Nose -->
+          <div style="position: absolute; right: -25px; top: 5px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 30px solid #333;"></div>
+          <!-- Cargo bay line -->
+          <div style="position: absolute; top: 2px; left: 30px; right: 40px; height: 2px; background: #999;"></div>
+          <!-- Left wing -->
+          <div style="position: absolute; top: 15px; left: 20px; width: 80px; height: 6px; background: #444; transform: skewX(20deg) translateY(20px); border-radius: 2px;"></div>
+          <!-- Right wing -->
+          <div style="position: absolute; top: 15px; left: 20px; width: 80px; height: 6px; background: #555; transform: skewX(-20deg) translateY(-25px); border-radius: 2px;"></div>
+          <!-- Tail fin -->
+          <div style="position: absolute; left: -5px; top: -30px; width: 6px; height: 35px; background: #2244aa; border-radius: 2px 2px 0 0;"></div>
+          <!-- Engines -->
+          <div style="position: absolute; left: -12px; top: 8px; display: flex; flex-direction: column; gap: 3px;">
+            <div style="width: 14px; height: 8px; background: #ff6600; border-radius: 2px;"></div>
+            <div style="width: 14px; height: 8px; background: #ff6600; border-radius: 2px;"></div>
+            <div style="width: 14px; height: 8px; background: #ff6600; border-radius: 2px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Axes indicator -->
+      <div style="position: absolute; bottom: 15px; left: 15px; font-family: monospace; font-size: 11px;">
+        <span style="color: #ff4444;">X →</span>
+        <span style="color: #44ff44; margin-left: 8px;">Y ↑</span>
+        <span style="color: #4488ff; margin-left: 8px;">Z ⊙</span>
+      </div>
+    </div>
+
+    <!-- Telemetry Strip (30%) -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 8px; padding: 8px; background: #0a0e14; height: 140px;">
+
+      <!-- Quaternion Panel -->
+      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 10px;">
+        <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #6b7280; margin-bottom: 8px;">Quaternion</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-family: 'Courier New', monospace; font-size: 13px; color: #00ff99;">
+          <span>w: 0.9832</span>
+          <span>x: 0.0214</span>
+          <span>y: 0.1021</span>
+          <span>z: -0.1498</span>
+        </div>
+      </div>
+
+      <!-- Charts Panel -->
+      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #6b7280; margin-bottom: 2px;">Sensors</div>
+        <!-- Accel chart mockup -->
+        <div style="flex: 1; background: #0d1117; border: 1px solid #1f2937; border-radius: 3px; position: relative; overflow: hidden;">
+          <span style="position: absolute; top: 2px; left: 4px; font-size: 8px; color: #555;">ACCEL (m/s²)</span>
+          <svg width="100%" height="100%" viewBox="0 0 200 40" preserveAspectRatio="none">
+            <line x1="0" y1="20" x2="200" y2="20" stroke="#1f2937" stroke-width="0.5"/>
+            <polyline points="0,22 10,21 20,23 30,19 40,20 50,22 60,18 70,21 80,20 90,22 100,19 110,21 120,20 130,22 140,19 150,21 160,20 170,22 180,19 190,21 200,20" fill="none" stroke="#ff4444" stroke-width="1"/>
+            <polyline points="0,20 10,19 20,21 30,20 40,19 50,21 60,20 70,19 80,21 90,20 100,19 110,21 120,20 130,19 140,21 150,20 160,19 170,21 180,20 190,19 200,21" fill="none" stroke="#44ff44" stroke-width="1"/>
+            <polyline points="0,8 10,9 20,7 30,8 40,9 50,7 60,8 70,9 80,7 90,8 100,9 110,7 120,8 130,9 140,7 150,8 160,9 170,7 180,8 190,9 200,7" fill="none" stroke="#4488ff" stroke-width="1"/>
+          </svg>
+          <span style="position: absolute; top: 2px; right: 4px; font-size: 8px;">
+            <span style="color: #ff4444;">X</span>
+            <span style="color: #44ff44; margin-left: 3px;">Y</span>
+            <span style="color: #4488ff; margin-left: 3px;">Z</span>
+          </span>
+        </div>
+        <!-- Gyro chart mockup -->
+        <div style="flex: 1; background: #0d1117; border: 1px solid #1f2937; border-radius: 3px; position: relative; overflow: hidden;">
+          <span style="position: absolute; top: 2px; left: 4px; font-size: 8px; color: #555;">GYRO (rad/s)</span>
+          <svg width="100%" height="100%" viewBox="0 0 200 40" preserveAspectRatio="none">
+            <line x1="0" y1="20" x2="200" y2="20" stroke="#1f2937" stroke-width="0.5"/>
+            <polyline points="0,20 10,20 20,19 30,21 40,20 50,20 60,21 70,19 80,20 90,20 100,20 110,20 120,21 130,19 140,20 150,20 160,20 170,21 180,19 190,20 200,20" fill="none" stroke="#ff4444" stroke-width="1"/>
+            <polyline points="0,20 10,21 20,20 30,20 40,19 50,20 60,20 70,20 80,21 90,20 100,20 110,19 120,20 130,20 140,21 150,20 160,20 170,20 180,20 190,21 200,20" fill="none" stroke="#44ff44" stroke-width="1"/>
+            <polyline points="0,20 10,20 20,20 30,20 40,21 50,19 60,20 70,20 80,20 90,21 100,19 110,20 120,20 130,20 140,20 150,21 160,19 170,20 180,20 190,20 200,20" fill="none" stroke="#4488ff" stroke-width="1"/>
+          </svg>
+          <span style="position: absolute; top: 2px; right: 4px; font-size: 8px;">
+            <span style="color: #ff4444;">X</span>
+            <span style="color: #44ff44; margin-left: 3px;">Y</span>
+            <span style="color: #4488ff; margin-left: 3px;">Z</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Status Panel -->
+      <div style="background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 10px;">
+        <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: #6b7280; margin-bottom: 8px;">Connection</div>
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #00ff99; box-shadow: 0 0 6px #00ff99;"></div>
+          <span style="font-size: 12px; color: #e0e0e0;">Connected</span>
+        </div>
+        <div style="font-size: 22px; color: #00ff99; font-family: 'Courier New', monospace; margin-bottom: 4px;">60 Hz</div>
+        <div style="font-size: 10px; color: #6b7280;">ws://192.168.4.1/ws</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 24px;">
+  <h3>Shuttle 3D Model — Primitive Geometry</h3>
+  <p class="subtitle">Built from Three.js BoxGeometry, ConeGeometry, CylinderGeometry</p>
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px;">
+    <div style="background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 12px; text-align: center;">
+      <div style="width: 60px; height: 20px; background: linear-gradient(#ddd, #aaa); border-radius: 3px; margin: 0 auto 8px;"></div>
+      <div style="font-size: 11px; color: #888;">Fuselage</div>
+      <div style="font-size: 9px; color: #555;">BoxGeometry</div>
+    </div>
+    <div style="background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 12px; text-align: center;">
+      <div style="width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 25px solid #333; margin: 0 auto 8px;"></div>
+      <div style="font-size: 11px; color: #888;">Nose Cone</div>
+      <div style="font-size: 9px; color: #555;">ConeGeometry</div>
+    </div>
+    <div style="background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 12px; text-align: center;">
+      <div style="width: 70px; height: 4px; background: #444; margin: 10px auto 8px; border-radius: 2px;"></div>
+      <div style="font-size: 11px; color: #888;">Wings (x2)</div>
+      <div style="font-size: 9px; color: #555;">BoxGeometry</div>
+    </div>
+    <div style="background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 12px; text-align: center;">
+      <div style="display: flex; gap: 3px; justify-content: center; margin-bottom: 8px;">
+        <div style="width: 10px; height: 10px; background: #ff6600; border-radius: 50%;"></div>
+        <div style="width: 10px; height: 10px; background: #ff6600; border-radius: 50%;"></div>
+        <div style="width: 10px; height: 10px; background: #ff6600; border-radius: 50%;"></div>
+      </div>
+      <div style="font-size: 11px; color: #888;">Engines (x3)</div>
+      <div style="font-size: 9px; color: #555;">CylinderGeometry</div>
+    </div>
+  </div>
+</div>

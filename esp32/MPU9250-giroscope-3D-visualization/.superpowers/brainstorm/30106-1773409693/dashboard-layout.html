@@ -1,0 +1,92 @@
+<h2>Dashboard Layout</h2>
+<p class="subtitle">How should the 3D shuttle, telemetry panel, and real-time charts be arranged?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #1a1a2e;">
+      <!-- Layout A: 3D dominant left, sidebar right -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; height: 200px;">
+        <div style="background: #16213e; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #0f9; font-size: 28px; border: 1px solid #0f93;">
+          🚀 3D Shuttle View
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: #16213e; border-radius: 6px; flex: 1; padding: 8px; border: 1px solid #333;">
+            <div style="color: #888; font-size: 10px; text-transform: uppercase;">Quaternion</div>
+            <div style="color: #0f9; font-family: monospace; font-size: 11px; margin-top: 4px;">
+              w: 0.98<br>x: 0.02<br>y: 0.10<br>z: -0.15
+            </div>
+          </div>
+          <div style="background: #16213e; border-radius: 6px; flex: 1; padding: 8px; border: 1px solid #333;">
+            <div style="color: #888; font-size: 10px; text-transform: uppercase;">Accel / Gyro</div>
+            <div style="color: #0af; font-size: 10px; margin-top: 4px;">
+              ≈≈≈ live charts ≈≈≈
+            </div>
+          </div>
+          <div style="background: #16213e; border-radius: 6px; padding: 8px; border: 1px solid #333;">
+            <div style="color: #0f9; font-size: 11px;">● Connected</div>
+            <div style="color: #888; font-size: 10px;">60 Hz | 2.1ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A) Sidebar Right</h3>
+      <p>3D view takes 2/3, telemetry stacked in right sidebar. Classic mission control feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #1a1a2e;">
+      <!-- Layout B: 3D on top, panels below -->
+      <div style="display: flex; flex-direction: column; gap: 8px; height: 200px;">
+        <div style="background: #16213e; border-radius: 6px; flex: 2; display: flex; align-items: center; justify-content: center; color: #0f9; font-size: 28px; border: 1px solid #0f93;">
+          🚀 3D Shuttle View
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; flex: 1;">
+          <div style="background: #16213e; border-radius: 6px; padding: 6px; border: 1px solid #333;">
+            <div style="color: #888; font-size: 10px;">QUATERNION</div>
+            <div style="color: #0f9; font-family: monospace; font-size: 10px;">w:0.98 x:0.02</div>
+          </div>
+          <div style="background: #16213e; border-radius: 6px; padding: 6px; border: 1px solid #333;">
+            <div style="color: #888; font-size: 10px;">ACCEL/GYRO</div>
+            <div style="color: #0af; font-size: 10px;">≈≈ charts ≈≈</div>
+          </div>
+          <div style="background: #16213e; border-radius: 6px; padding: 6px; border: 1px solid #333;">
+            <div style="color: #0f9; font-size: 10px;">● Connected</div>
+            <div style="color: #888; font-size: 10px;">60Hz</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B) Bottom Bar</h3>
+      <p>3D view dominant on top, telemetry panels as horizontal strip below. Maximizes 3D viewport.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #1a1a2e;">
+      <!-- Layout C: Full screen 3D with overlay HUD -->
+      <div style="position: relative; height: 200px; background: #16213e; border-radius: 6px; border: 1px solid #0f93;">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #0f9; font-size: 28px;">
+          🚀 3D Shuttle (Fullscreen)
+        </div>
+        <!-- HUD overlay top-right -->
+        <div style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border-radius: 6px; padding: 8px; border: 1px solid #333;">
+          <div style="color: #888; font-size: 9px;">QUATERNION</div>
+          <div style="color: #0f9; font-family: monospace; font-size: 10px;">w:0.98 x:0.02</div>
+        </div>
+        <!-- HUD overlay bottom -->
+        <div style="position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(0,0,0,0.7); border-radius: 6px; padding: 6px 8px; display: flex; justify-content: space-between; border: 1px solid #333;">
+          <div style="color: #0af; font-size: 10px;">≈≈ accel ≈≈</div>
+          <div style="color: #f90; font-size: 10px;">≈≈ gyro ≈≈</div>
+          <div style="color: #0f9; font-size: 10px;">● 60Hz</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C) Fullscreen HUD Overlay</h3>
+      <p>3D fills entire screen. Telemetry as semi-transparent overlays. Most immersive, NASA-style HUD.</p>
+    </div>
+  </div>
+</div>

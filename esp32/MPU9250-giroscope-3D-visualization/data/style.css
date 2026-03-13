@@ -1,0 +1,143 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    height: 100vh;
+}
+
+#container {
+    display: flex;
+    height: 100vh;
+}
+
+#viewport {
+    flex: 7;
+    position: relative;
+    border-right: 2px solid #00ff99;
+}
+
+#viewport canvas {
+    display: block;
+}
+
+#status-bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 10;
+    font-size: 14px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.connected {
+    background: #00ff99;
+    box-shadow: 0 0 6px #00ff99;
+}
+
+.dot.disconnected {
+    background: #ff4444;
+    box-shadow: 0 0 6px #ff4444;
+}
+
+#hz-display {
+    color: #00ff99;
+    margin-left: auto;
+}
+
+#telemetry {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+    overflow-y: auto;
+}
+
+.panel {
+    background: #111128;
+    border: 1px solid #222244;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.panel h3 {
+    color: #00ff99;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.quat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.quat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 8px;
+    background: #0a0a1a;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.quat-item .label {
+    color: #00ff99;
+    font-weight: bold;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #1a1a3a;
+}
+
+.status-row .label {
+    color: #888;
+}
+
+#charts-panel canvas {
+    width: 100%;
+    height: 80px;
+    background: #0a0a1a;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+    #container {
+        flex-direction: column;
+    }
+
+    #viewport {
+        flex: none;
+        height: 50vh;
+        border-right: none;
+        border-bottom: 2px solid #00ff99;
+    }
+
+    #telemetry {
+        flex: none;
+        height: 50vh;
+    }
+}
