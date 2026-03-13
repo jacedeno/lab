@@ -53,7 +53,6 @@ graph TD
     end
 
 
-```mermaid
 graph TD
     subgraph Physical_Layer ["Layer 1: Physical Hardware & Power"]
         direction TB
