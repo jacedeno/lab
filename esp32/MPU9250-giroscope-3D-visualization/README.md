@@ -32,22 +32,40 @@ A high-performance IIoT visualization project utilizing the **Seeed Studio XIAO 
 
 ```mermaid
 graph TD
-    subgraph Hardware ["Physical Layer"]
-        BATT[LiPo Battery 3.7V] --> XIAO[XIAO ESP32-S3]
-        XIAO <-->|I2C 400kHz| MPU[MPU-9250 IMU]
+    subgraph Physical_Layer ["Layer 1: Physical Hardware & Power"]
+        direction TB
+        BATT["3.7V LiPo Battery"]
+        XIAO["XIAO ESP32-S3"]
+        MPU["MPU-9250 IMU Sensor"]
+        
+        %% Battery Connections
+        BATT -- "Positive (+) Red" --> BPAD["B+ Pad (Bottom of XIAO)"]
+        BATT -- "Negative (-) Black" --> BNAD["B- Pad (Bottom of XIAO)"]
+        
+        %% I2C Data & Power Connections
+        XIAO -- "3.3V (VCC)" --> MPU
+        XIAO -- "GND" --> MPU
+        XIAO -- "GPIO 4 (D4 / SDA)" --> MPU
+        XIAO -- "GPIO 5 (D5 / SCL)" --> MPU
     end
 
-    subgraph Firmware ["ESP32 Logic (PlatformIO)"]
-        Filter[Sensor Fusion Filter] --> JSON[JSON Serializer]
-        JSON --> WS[Async WebSocket Server]
+    subgraph Processing_Layer ["Layer 2: Firmware & Data Processing"]
+        direction LR
+        LFS[(LittleFS: HTML/JS/3D Assets)]
+        Fusion[Sensor Fusion: Madgwick/Mahony]
+        WSS[Async WebSocket Server]
+        
+        XIAO --> LFS
+        MPU -- "Raw A/G/M Data" --> Fusion
+        Fusion -- "Quaternions (w,x,y,z)" --> WSS
     end
 
-    subgraph Storage ["Filesystem (LittleFS)"]
-        HTML[index.html]
-        Model[shuttle.gltf]
-    end
-
-    subgraph View ["Frontend (Browser)"]
-        Three[Three.js Engine] --> Render[3D NASA Shuttle]
-        WS -.->|Quaternions| Three
+    subgraph Visualization_Layer ["Layer 3: Web Frontend"]
+        Browser["Web Browser (macOS/Fedora)"]
+        ThreeJS["Three.js Engine (via CDN)"]
+        Model3D["3D NASA Shuttle Representation"]
+        
+        WSS -- "Real-time Stream" --> Browser
+        Browser --> ThreeJS
+        ThreeJS --> Model3D
     end
