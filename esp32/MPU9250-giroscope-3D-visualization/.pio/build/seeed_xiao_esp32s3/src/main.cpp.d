@@ -203,15 +203,15 @@
  /home/geekendzone/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
  /home/geekendzone/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h \
  /home/geekendzone/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
- .pio/libdeps/seeed_xiao_esp32s3/ESP\ Async\ WebServer/src/ESPAsyncWebServer.h \
- .pio/libdeps/seeed_xiao_esp32s3/ESP\ Async\ WebServer/src/StringArray.h \
- .pio/libdeps/seeed_xiao_esp32s3/AsyncTCP/src/AsyncTCP.h \
+ .pio/libdeps/seeed_xiao_esp32s3/ESPAsyncWebServer-esphome/src/ESPAsyncWebServer.h \
+ .pio/libdeps/seeed_xiao_esp32s3/ESPAsyncWebServer-esphome/src/StringArray.h \
+ .pio/libdeps/seeed_xiao_esp32s3/AsyncTCP-esphome/src/AsyncTCP.h \
  /home/geekendzone/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/include/lwip/lwip/src/include/lwip/pbuf.h \
- .pio/libdeps/seeed_xiao_esp32s3/ESP\ Async\ WebServer/src/WebResponseImpl.h \
- .pio/libdeps/seeed_xiao_esp32s3/ESP\ Async\ WebServer/src/WebHandlerImpl.h \
- .pio/libdeps/seeed_xiao_esp32s3/ESP\ Async\ WebServer/src/AsyncWebSocket.h \
- .pio/libdeps/seeed_xiao_esp32s3/ESP\ Async\ WebServer/src/AsyncWebSynchronization.h \
- .pio/libdeps/seeed_xiao_esp32s3/ESP\ Async\ WebServer/src/AsyncEventSource.h \
+ .pio/libdeps/seeed_xiao_esp32s3/ESPAsyncWebServer-esphome/src/WebResponseImpl.h \
+ .pio/libdeps/seeed_xiao_esp32s3/ESPAsyncWebServer-esphome/src/WebHandlerImpl.h \
+ .pio/libdeps/seeed_xiao_esp32s3/ESPAsyncWebServer-esphome/src/AsyncWebSocket.h \
+ .pio/libdeps/seeed_xiao_esp32s3/ESPAsyncWebServer-esphome/src/AsyncWebSynchronization.h \
+ .pio/libdeps/seeed_xiao_esp32s3/ESPAsyncWebServer-esphome/src/AsyncEventSource.h \
  .pio/libdeps/seeed_xiao_esp32s3/ArduinoJson/src/ArduinoJson.h \
  .pio/libdeps/seeed_xiao_esp32s3/ArduinoJson/src/ArduinoJson.hpp \
  .pio/libdeps/seeed_xiao_esp32s3/ArduinoJson/src/ArduinoJson/Configuration.hpp \
