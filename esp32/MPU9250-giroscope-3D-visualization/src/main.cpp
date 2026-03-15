@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <WiFi.h>
+#include <DNSServer.h>
 #include <LittleFS.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
@@ -23,6 +24,9 @@ static constexpr uint32_t SENSOR_PERIOD_MS = 1000 / (uint32_t)SENSOR_HZ; // 5ms
 static constexpr float WS_HZ = 60.0f;
 static constexpr uint32_t WS_PERIOD_MS = 1000 / (uint32_t)WS_HZ;        // 16ms
 
+// --- IMU state ---
+static bool mpuReady = false;
+
 // --- Shared sensor data ---
 struct SensorData {
     float w, x, y, z;       // quaternion
@@ -39,6 +43,7 @@ static MPU9250 imu(Wire, MPU_ADDR);
 static MadgwickFilter filter(0.1f, SENSOR_HZ);
 
 // --- Network ---
+static DNSServer dnsServer;
 static AsyncWebServer server(80);
 static AsyncWebSocket ws("/ws");
 
@@ -108,16 +113,15 @@ void setup() {
     // MPU-9250 init
     int status = imu.begin();
     if (status < 0) {
-        Serial.printf("[MPU] Init FAILED (status %d). Halting.\n", status);
-        while (true) { delay(1000); }
+        Serial.printf("[MPU] Init FAILED (status %d). WiFi will start without sensor.\n", status);
+    } else {
+        Serial.println("[MPU] Init OK");
+        imu.setAccelRange(MPU9250::ACCEL_RANGE_8G);
+        imu.setGyroRange(MPU9250::GYRO_RANGE_500DPS);
+        imu.setDlpfBandwidth(MPU9250::DLPF_BANDWIDTH_92HZ);
+        imu.setSrd(4); // 1000/(4+1) = 200 Hz
+        mpuReady = true;
     }
-    Serial.println("[MPU] Init OK");
-
-    // MPU-9250 config
-    imu.setAccelRange(MPU9250::ACCEL_RANGE_8G);
-    imu.setGyroRange(MPU9250::GYRO_RANGE_500DPS);
-    imu.setDlpfBandwidth(MPU9250::DLPF_BANDWIDTH_92HZ);
-    imu.setSrd(4); // 1000/(4+1) = 200 Hz
 
     // LittleFS
     if (!LittleFS.begin(true)) {
@@ -133,9 +137,45 @@ void setup() {
     Serial.printf("[WiFi] AP started: %s @ %s\n", AP_SSID,
                   WiFi.softAPIP().toString().c_str());
 
+    // Captive portal DNS: resolve all domains to our IP
+    dnsServer.start(53, "*", WiFi.softAPIP());
+    Serial.println("[DNS] Captive portal DNS started");
+
     // WebSocket
     ws.onEvent(onWsEvent);
     server.addHandler(&ws);
+
+    // Captive portal: respond what each OS expects so they think there IS internet
+    // Android: expects HTTP 204
+    server.on("/generate_204", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(204);
+    });
+    // Android alternate
+    server.on("/gen_204", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(204);
+    });
+    // Windows: expects "Microsoft Connect Test" with 200
+    server.on("/connecttest.txt", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(200, "text/plain", "Microsoft Connect Test");
+    });
+    // Windows NCSI
+    server.on("/ncsi.txt", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(200, "text/plain", "Microsoft NCSI");
+    });
+    // Apple: expects 200 with "Success"
+    server.on("/hotspot-detect.html", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(200, "text/html", "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>");
+    });
+    server.on("/library/test/success.html", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(200, "text/html", "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>");
+    });
+    // Firefox
+    server.on("/canonical.html", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(200, "text/html", "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>");
+    });
+    server.on("/success.txt", HTTP_GET, [](AsyncWebServerRequest *r) {
+        r->send(200, "text/plain", "success\n");
+    });
 
     // Serve static files from LittleFS
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
@@ -146,14 +186,20 @@ void setup() {
     // Mutex
     dataMutex = xSemaphoreCreateMutex();
 
-    // Sensor task on Core 1
-    TaskHandle_t sensorHandle = nullptr;
-    xTaskCreatePinnedToCore(sensorTask, "SensorTask", 8192, nullptr, 2,
-                            &sensorHandle, 1);
-    Serial.println("[TASK] Sensor task started on Core 1");
+    // Sensor task on Core 1 (only if MPU is ready)
+    if (mpuReady) {
+        TaskHandle_t sensorHandle = nullptr;
+        xTaskCreatePinnedToCore(sensorTask, "SensorTask", 8192, nullptr, 2,
+                                &sensorHandle, 1);
+        Serial.println("[TASK] Sensor task started on Core 1");
+    } else {
+        Serial.println("[TASK] Sensor task SKIPPED (no MPU)");
+    }
 }
 
 void loop() {
+    dnsServer.processNextRequest();
+
     static uint32_t lastWsBroadcast = 0;
 
     uint32_t now = millis();
