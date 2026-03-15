@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.git/
+.superpowers/
+.claude/
+.agents/
+docs/
+venv/
+data/kpi_data_prod.db
+*.png
+*.md
+!README.md
