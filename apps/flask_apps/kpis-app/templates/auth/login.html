@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Sign In — Maintenance KPI Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: 60vh;">
+  <div class="form-card" style="max-width: 420px; width: 100%;">
+    <div class="text-center mb-4">
+      <div style="width:48px;height:48px;background:var(--light-green);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+        <i class="bi bi-shield-lock" style="font-size:1.4rem;color:var(--primary);"></i>
+      </div>
+      <h2 style="margin-bottom:4px;">Sign In</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">Enter your email to receive a login PIN</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" id="email" name="email"
+               placeholder="name@capitolaggregates.com"
+               required autofocus
+               class="form-control" style="font-family:'DM Sans',sans-serif;font-size:0.9rem;">
+      </div>
+      <button type="submit" class="btn-save w-100">Send PIN</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
