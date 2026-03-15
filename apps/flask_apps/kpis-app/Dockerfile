@@ -16,13 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create data directory and set permissions
-RUN mkdir -p /app/data && \
-    addgroup --system appuser && \
-    adduser --system --ingroup appuser appuser && \
-    chown -R appuser:appuser /app/data
-
-USER appuser
+RUN mkdir -p /app/data
 
 EXPOSE 5000
 
