@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Add Week — Maintenance KPI Dashboard{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <a href="{{ url_for('dashboard') }}" class="back-link"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+
+  <div class="form-card">
+    <h2><i class="bi bi-plus-circle" style="color: var(--primary);"></i> Add New Week Data</h2>
+
+    <form method="POST">
+      <div class="form-section-title">Week Information</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Week Number (YYWW)</label>
+          <input type="number" class="form-control" name="week_num" id="weekNum"
+                 value="{{ next_info.week_num }}" min="2001" max="9953" required
+                 onchange="updateWeekDate()">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Week Start Date (Monday)</label>
+          <input type="text" class="form-control" name="week_date" id="weekDate"
+                 value="{{ next_info.week_date }}" readonly style="background: var(--bg-subtle);">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Working Days</label>
+          <input type="number" class="form-control" name="working_days" value="5" min="1" max="7" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Resources</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Personnel</label>
+          <input type="number" class="form-control" name="personnel" value="15" min="1" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Available Hours</label>
+          <input type="number" class="form-control" name="available_hours" value="496" min="0" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Planned Hours</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Planned Hours (Corrective)</label>
+          <input type="number" class="form-control" name="planned_hrs_corrective" value="400" min="0" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Planned Hours (Reliability)</label>
+          <input type="number" class="form-control" name="planned_hrs_reliability" value="150" min="0" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Executed Hours</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Executed Hours (Corrective)</label>
+          <input type="number" class="form-control" name="executed_hrs_corrective" value="300" min="0" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Executed Hours (Reliability)</label>
+          <input type="number" class="form-control" name="executed_hrs_reliability" value="140" min="0" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">KPI Percentages</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Planning Rate %</label>
+          <input type="number" class="form-control" name="planning_rate" value="100" min="0" max="200" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Plan Attainment %</label>
+          <input type="number" class="form-control" name="plan_attainment" value="70" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Attainment Corrective %</label>
+          <input type="number" class="form-control" name="plan_attainment_corrective" value="65" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Attainment Reliability %</label>
+          <input type="number" class="form-control" name="plan_attainment_reliability" value="85" min="0" max="100" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Unplanned &amp; PMR</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Unplanned Jobs %</label>
+          <input type="number" class="form-control" name="unplanned_job_pct" value="20" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PMR %</label>
+          <input type="number" class="form-control" name="pmr_pct" value="30" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PMR Completion %</label>
+          <input type="number" class="form-control" name="pmr_completion" value="80" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Unplanned Hours Total</label>
+          <input type="number" class="form-control" name="unplanned_hrs_total" value="100" min="0" required>
+        </div>
+      </div>
+
+      <div class="d-flex gap-3 mt-4">
+        <button type="submit" class="btn-save">Save Week</button>
+        <a href="{{ url_for('dashboard') }}" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function updateWeekDate() {
+  const weekNum = parseInt(document.getElementById('weekNum').value);
+  if (isNaN(weekNum) || weekNum < 2001 || weekNum > 9953) return;
+  const year = 2000 + Math.floor(weekNum / 100);
+  const week = weekNum % 100;
+  if (week < 1 || week > 53) return;
+  const jan4 = new Date(year, 0, 4);
+  const dayOfWeek = jan4.getDay() || 7;
+  const week1Monday = new Date(jan4);
+  week1Monday.setDate(jan4.getDate() - dayOfWeek + 1);
+  const targetMonday = new Date(week1Monday);
+  targetMonday.setDate(week1Monday.getDate() + (week - 1) * 7);
+  const mm = String(targetMonday.getMonth() + 1).padStart(2, '0');
+  const dd = String(targetMonday.getDate()).padStart(2, '0');
+  const yyyy = targetMonday.getFullYear();
+  document.getElementById('weekDate').value = `${mm}/${dd}/${yyyy}`;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ week.Week }} — Maintenance KPI Dashboard{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <a href="{{ url_for('dashboard') }}" class="back-link"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+
+  <div class="form-card">
+    <h2><i class="bi bi-pencil-square" style="color: var(--primary);"></i> Edit {{ week.Week }}</h2>
+
+    <form method="POST">
+      <div class="form-section-title">Week Information</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Week Number (YYWW)</label>
+          <input type="number" class="form-control" name="week_num"
+                 value="{{ week.WeekNum if week.WeekNum < 10000 else (week.WeekNum // 100 % 100) * 100 + (week.WeekNum % 100) }}"
+                 readonly style="background: var(--bg-subtle);">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Week Start Date (Monday)</label>
+          <input type="text" class="form-control" name="week_date"
+                 value="{{ week.WeekDate }}" readonly style="background: var(--bg-subtle);">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Working Days</label>
+          <input type="number" class="form-control" name="working_days" value="{{ week.WorkingDays }}" min="1" max="7" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Resources</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Personnel</label>
+          <input type="number" class="form-control" name="personnel" value="{{ week.Personnel }}" min="1" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Available Hours</label>
+          <input type="number" class="form-control" name="available_hours" value="{{ week.AvailableHours }}" min="0" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Planned Hours</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Planned Hours (Corrective)</label>
+          <input type="number" class="form-control" name="planned_hrs_corrective" value="{{ week.PlannedHrs_Corrective }}" min="0" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Planned Hours (Reliability)</label>
+          <input type="number" class="form-control" name="planned_hrs_reliability" value="{{ week.PlannedHrs_Reliability }}" min="0" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Executed Hours</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Executed Hours (Corrective)</label>
+          <input type="number" class="form-control" name="executed_hrs_corrective" value="{{ week.ExecutedHrs_Corrective }}" min="0" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Executed Hours (Reliability)</label>
+          <input type="number" class="form-control" name="executed_hrs_reliability" value="{{ week.ExecutedHrs_Reliability }}" min="0" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">KPI Percentages</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Planning Rate %</label>
+          <input type="number" class="form-control" name="planning_rate" value="{{ week.PlanningRate }}" min="0" max="200" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Plan Attainment %</label>
+          <input type="number" class="form-control" name="plan_attainment" value="{{ week.PlanAttainment }}" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Attainment Corrective %</label>
+          <input type="number" class="form-control" name="plan_attainment_corrective" value="{{ week.PlanAttainment_Corrective }}" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Attainment Reliability %</label>
+          <input type="number" class="form-control" name="plan_attainment_reliability" value="{{ week.PlanAttainment_Reliability }}" min="0" max="100" required>
+        </div>
+      </div>
+
+      <div class="form-section-title">Unplanned &amp; PMR</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Unplanned Jobs %</label>
+          <input type="number" class="form-control" name="unplanned_job_pct" value="{{ week.UnplannedJob_Pct }}" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PMR %</label>
+          <input type="number" class="form-control" name="pmr_pct" value="{{ week.PMR_Pct }}" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PMR Completion %</label>
+          <input type="number" class="form-control" name="pmr_completion" value="{{ week.PMR_Completion }}" min="0" max="100" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Unplanned Hours Total</label>
+          <input type="number" class="form-control" name="unplanned_hrs_total" value="{{ week.UnplannedHrs_Total }}" min="0" required>
+        </div>
+      </div>
+
+      <div class="d-flex gap-3 mt-4">
+        <button type="submit" class="btn-save">Update Week</button>
+        <a href="{{ url_for('dashboard') }}" class="btn-cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
