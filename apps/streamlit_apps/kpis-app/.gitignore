@@ -1,0 +1,5 @@
+.agents/
+.claude/
+skills-lock.json
+webapp-*.png
+.playwright-cli/
