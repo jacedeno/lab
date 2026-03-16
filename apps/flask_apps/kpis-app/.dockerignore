@@ -6,7 +6,7 @@ __pycache__/
 .agents/
 docs/
 venv/
-data/kpi_data_prod.db
+data/
 *.png
 *.md
 !README.md

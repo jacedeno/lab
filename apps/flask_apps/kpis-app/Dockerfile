@@ -16,11 +16,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chmod +x /app/entrypoint.sh
 
 EXPOSE 5000
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=10s \
     CMD curl --fail http://localhost:5000/health || exit 1
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--access-logfile", "-", "app:app"]
