@@ -2,128 +2,134 @@
 
 ## Overview
 
-The Flask KPI Dashboard runs as a Docker container managed via **Portainer** on the Docker host at `192.168.68.81`. The source code lives in the `jacedeno/lab` GitHub repository under `apps/flask_apps/kpis-app`.
+The Flask KPI Dashboard runs as a Docker container managed via **Portainer** on the
+Docker host at `192.168.68.81` (hostname: `dockergeek`). The source code lives in the
+[jacedeno/lab](https://github.com/jacedeno/lab) GitHub repository under
+`apps/flask_apps/kpis-app`.
 
-## Prerequisites
+| Resource | Location |
+|----------|----------|
+| Portainer UI | https://192.168.68.81:9443 |
+| App (internal) | http://192.168.68.81:8502 |
+| App (public) | https://kpis.cedeno.app (via Cloudflare Tunnel) |
+| Git repo on server | `/root/lab` |
+| App source on server | `/root/lab/apps/flask_apps/kpis-app` |
+| SQLite database | `/root/apps/flask-kpis-app/data/kpi_data.db` |
 
-- Docker host: `192.168.68.81` (hostname: `dockergeek`)
-- Portainer CE: `https://192.168.68.81:9443`
-- Git repo cloned on the server: `/root/apps/flask-kpis-app`
-- Data directory (SQLite DB): `/root/apps/flask-kpis-app/data/kpi_data.db`
+## Server Setup (one-time, already done)
 
-## Server Setup (one-time)
+### 1. Git repository
 
-### 1. Clone the repository
-
-```bash
-ssh root@192.168.68.81
-cd /root/apps
-git clone git@github.com:jacedeno/lab.git
-```
-
-This gives you the full lab repo at `/root/apps/lab`. The app source is at:
-```
-/root/apps/lab/apps/flask_apps/kpis-app/
-```
-
-### 2. Configure Git (if not already done)
+The repo is cloned at `/root/lab` using HTTPS:
 
 ```bash
-git config --global user.name "jacedeno"
-git config --global user.email "jacedeno@geekendzone.com"
+cd /root && git clone https://github.com/jacedeno/lab.git
 ```
 
-### 3. Ensure SSH key is set up for GitHub
+### 2. Data directory
+
+The SQLite database lives **outside** the repo so it persists across container rebuilds:
 
 ```bash
-# Check if key exists
-cat ~/.ssh/id_ed25519.pub
-
-# If not, generate one and add it to GitHub
-ssh-keygen -t ed25519 -C "jacedeno@geekendzone.com"
-cat ~/.ssh/id_ed25519.pub
-# Copy the output and add it at: https://github.com/settings/keys
-```
-
-### 4. Ensure data directory exists
-
-```bash
+# Create the data directory
 mkdir -p /root/apps/flask-kpis-app/data
-# If migrating from old Streamlit app, copy the DB:
-cp /root/lab/apps/streamlit_apps/kpis-app/data/kpi_data.db /root/apps/flask-kpis-app/data/
+
+# Ensure correct permissions (directory must be writable for SQLite journal files)
+chmod 777 /root/apps/flask-kpis-app/data
+chmod 666 /root/apps/flask-kpis-app/data/kpi_data.db
 ```
 
-## Deployment Workflow
+### 3. Portainer stack
 
-### Making changes (develop → build → deploy)
+The stack `flask-kpi-dashboard` is configured in Portainer with the compose definition
+shown in the [Portainer Stack Definition](#portainer-stack-definition) section below.
 
-#### Step 1 — Pull latest code on the server
+---
+
+## How to Modify and Redeploy
+
+Follow these steps whenever you make changes to the application code.
+
+### Step 1 — Edit and commit changes
+
+You can edit code either on the server directly or from a development machine.
+
+**From the server:**
 
 ```bash
-cd /root/apps/lab
-git pull origin main
+# Navigate to the app directory
+cd /root/lab/apps/flask_apps/kpis-app
+
+# Make your changes, then commit and push
+git add -A
+git commit -m "Description of changes"
+git push origin main
 ```
 
-#### Step 2 — Rebuild the Docker image
+**From a development machine:**
 
 ```bash
-cd /root/apps/lab/apps/flask_apps/kpis-app
-docker build -t flask-kpi-dashboard .
+# Make changes locally, commit and push
+cd ~/repos/lab
+git add apps/flask_apps/kpis-app/
+git commit -m "Description of changes"
+git push origin main
 ```
 
-#### Step 3 — Redeploy the stack
+Then pull on the server:
 
-Option A — Via Portainer UI:
-1. Go to **Stacks** → **flask-kpi-dashboard**
-2. Click **Stop** then **Start** (or **Recreate** if you updated the compose)
-
-Option B — Via CLI:
 ```bash
-docker stop flask-kpi-dashboard
-docker rm flask-kpi-dashboard
-docker run -d \
-  --name flask-kpi-dashboard \
-  --restart unless-stopped \
-  -p 8502:5000 \
-  -v /root/apps/flask-kpis-app/data:/app/data \
-  -e SECRET_KEY=f7k9x2m4p8q1w6v3j5n0b8t2y4r7e1a \
-  -e RESEND_API_KEY=re_2rNouoD6_NNiTtmrULABvo1xGKCphB6EB \
-  -e DATABASE_PATH=data/kpi_data.db \
-  flask-kpi-dashboard
+# Fetch the latest code on the server
+cd /root/lab && git pull origin main
 ```
 
-Option C — Quick redeploy (one-liner):
+### Step 2 — Rebuild the Docker image
+
 ```bash
-cd /root/apps/lab/apps/flask_apps/kpis-app && \
-  git pull origin main && \
-  docker build -t flask-kpi-dashboard . && \
-  docker stop flask-kpi-dashboard && \
-  docker rm flask-kpi-dashboard && \
-  docker run -d \
-    --name flask-kpi-dashboard \
-    --restart unless-stopped \
-    -p 8502:5000 \
-    -v /root/apps/flask-kpis-app/data:/app/data \
-    -e SECRET_KEY=f7k9x2m4p8q1w6v3j5n0b8t2y4r7e1a \
-    -e RESEND_API_KEY=re_2rNouoD6_NNiTtmrULABvo1xGKCphB6EB \
-    -e DATABASE_PATH=data/kpi_data.db \
-    flask-kpi-dashboard
+# Build a new image from the updated source code
+cd /root/lab/apps/flask_apps/kpis-app && docker build -t flask-kpi-dashboard .
 ```
 
-#### Step 4 — Verify
+### Step 3 — Redeploy via Portainer
+
+1. Open **Portainer** at https://192.168.68.81:9443
+2. Go to **Stacks** > **flask-kpi-dashboard**
+3. Click **Stop this stack**
+4. Click **Start this stack**
+
+The stack references the local `flask-kpi-dashboard` image, so it will pick up
+the newly built image automatically.
+
+### Step 4 — Verify
 
 ```bash
-# Check container is running
+# Confirm the container is running and healthy
 docker ps | grep flask-kpi
 
-# Check health
+# Test the health endpoint
 curl http://localhost:8502/health
 
-# Check logs if something is wrong
+# Check application logs if something looks wrong
 docker logs flask-kpi-dashboard --tail 50
 ```
 
-App URL: **http://192.168.68.81:8502**
+Then open https://kpis.cedeno.app/ in the browser to confirm.
+
+---
+
+## Quick Redeploy (single command)
+
+For convenience, pull + build + redeploy in one shot from the server:
+
+```bash
+cd /root/lab && git pull origin main && cd apps/flask_apps/kpis-app && docker build -t flask-kpi-dashboard . && docker stop flask-kpi-dashboard && docker rm flask-kpi-dashboard && docker run -d --name flask-kpi-dashboard --restart unless-stopped -p 8502:5000 -v /root/apps/flask-kpis-app/data:/app/data -e SECRET_KEY=f7k9x2m4p8q1w6v3j5n0b8t2y4r7e1a -e RESEND_API_KEY=re_2rNouoD6_NNiTtmrULABvo1xGKCphB6EB -e DATABASE_PATH=data/kpi_data.db flask-kpi-dashboard
+```
+
+> **Note:** After using this CLI method, the container will no longer be managed by the
+> Portainer stack. To return to Portainer management, redeploy the stack from the
+> Portainer UI instead (Step 3 above).
+
+---
 
 ## Portainer Stack Definition
 
@@ -151,12 +157,16 @@ services:
       start_period: 10s
 ```
 
+---
+
 ## Troubleshooting
 
-| Issue | Command |
-|-------|---------|
-| Container won't start | `docker logs flask-kpi-dashboard` |
-| DB permission error | `chmod 644 /root/apps/flask-kpis-app/data/kpi_data.db` |
-| Port already in use | `docker ps -a` to find conflicting container |
-| Health check failing | `curl -v http://localhost:8502/health` |
-| Image not found | Rebuild: `docker build -t flask-kpi-dashboard .` |
+| Issue | Solution |
+|-------|----------|
+| Container won't start | Check logs: `docker logs flask-kpi-dashboard` |
+| `readonly database` error | Fix permissions: `chmod 777 /root/apps/flask-kpis-app/data && chmod 666 /root/apps/flask-kpis-app/data/kpi_data.db` |
+| Port 8502 already in use | Find conflicting container: `docker ps -a` |
+| Health check failing | Test manually: `curl -v http://localhost:8502/health` |
+| Image not found after build | Rebuild: `cd /root/lab/apps/flask_apps/kpis-app && docker build -t flask-kpi-dashboard .` |
+| Login returns 500 error | Likely DB permission issue — check logs and fix permissions (see above) |
+| Data directory missing | Recreate: `mkdir -p /root/apps/flask-kpis-app/data && chmod 777 /root/apps/flask-kpis-app/data` |
