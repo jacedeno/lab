@@ -262,6 +262,8 @@ body {
   flex-wrap: wrap;
   margin-bottom: 16px;
   box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 10;
 }
 .filter-label {
   font-size: 0.8rem;
