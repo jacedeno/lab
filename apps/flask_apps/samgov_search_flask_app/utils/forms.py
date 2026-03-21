@@ -4,6 +4,23 @@ from wtforms.validators import DataRequired, Email, Length, NumberRange, Optiona
 from wtforms.widgets import CheckboxInput, ListWidget
 from datetime import date, timedelta
 
+US_STATES = [
+    ('', 'All States'), ('AL', 'Alabama'), ('AK', 'Alaska'), ('AZ', 'Arizona'),
+    ('AR', 'Arkansas'), ('CA', 'California'), ('CO', 'Colorado'), ('CT', 'Connecticut'),
+    ('DE', 'Delaware'), ('FL', 'Florida'), ('GA', 'Georgia'), ('HI', 'Hawaii'),
+    ('ID', 'Idaho'), ('IL', 'Illinois'), ('IN', 'Indiana'), ('IA', 'Iowa'),
+    ('KS', 'Kansas'), ('KY', 'Kentucky'), ('LA', 'Louisiana'), ('ME', 'Maine'),
+    ('MD', 'Maryland'), ('MA', 'Massachusetts'), ('MI', 'Michigan'), ('MN', 'Minnesota'),
+    ('MS', 'Mississippi'), ('MO', 'Missouri'), ('MT', 'Montana'), ('NE', 'Nebraska'),
+    ('NV', 'Nevada'), ('NH', 'New Hampshire'), ('NJ', 'New Jersey'), ('NM', 'New Mexico'),
+    ('NY', 'New York'), ('NC', 'North Carolina'), ('ND', 'North Dakota'), ('OH', 'Ohio'),
+    ('OK', 'Oklahoma'), ('OR', 'Oregon'), ('PA', 'Pennsylvania'), ('RI', 'Rhode Island'),
+    ('SC', 'South Carolina'), ('SD', 'South Dakota'), ('TN', 'Tennessee'), ('TX', 'Texas'),
+    ('UT', 'Utah'), ('VT', 'Vermont'), ('VA', 'Virginia'), ('WA', 'Washington'),
+    ('WV', 'West Virginia'), ('WI', 'Wisconsin'), ('WY', 'Wyoming'),
+    ('DC', 'District of Columbia'), ('PR', 'Puerto Rico'), ('VI', 'Virgin Islands')
+]
+
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[
         DataRequired(message='Email is required'),
@@ -11,6 +28,12 @@ class LoginForm(FlaskForm):
     ])
     password = PasswordField('Password', validators=[
         DataRequired(message='Password is required')
+    ])
+
+class SettingsForm(FlaskForm):
+    sam_api_key = PasswordField('SAM.gov API Key', validators=[
+        Optional(),
+        Length(min=10, max=100, message='API key must be between 10 and 100 characters')
     ])
 
 class MultiCheckboxField(SelectMultipleField):
@@ -85,6 +108,24 @@ class SearchForm(FlaskForm):
         DataRequired(),
         NumberRange(min=1, max=1000, message='Limit must be between 1 and 1000')
     ], default=100)
+
+    # New filters - State
+    state = SelectField('State', choices=US_STATES, default='')
+
+    # Classification Code
+    classification_code = StringField('Classification Code', validators=[Optional(), Length(max=10)])
+
+    # Status filter
+    status = SelectField('Status', choices=[
+        ('', 'All'),
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('archived', 'Archived')
+    ], default='')
+
+    # Response deadline range
+    rdl_from = DateField('Response Deadline From', validators=[Optional()])
+    rdl_to = DateField('Response Deadline To', validators=[Optional()])
     
     def validate(self, extra_validators=None):
         """Custom validation for the search form"""
@@ -106,6 +147,15 @@ class SearchForm(FlaskForm):
         if self.naics_mode.data == 'custom' and self.custom_naics.data:
             if not self.custom_naics.data.isdigit():
                 self.custom_naics.errors.append('NAICS code must contain only digits')
+                return False
+        
+        # Validate response deadline range if provided
+        if self.rdl_from.data and self.rdl_to.data:
+            if self.rdl_from.data > self.rdl_to.data:
+                self.rdl_to.errors.append('Response deadline end date must be after start date')
+                return False
+            if (self.rdl_to.data - self.rdl_from.data).days > 365:
+                self.rdl_to.errors.append('Response deadline range cannot be more than 1 year')
                 return False
         
         return True
@@ -139,9 +189,21 @@ class SearchForm(FlaskForm):
             params['title'] = self.title.data
         if self.org_name.data:
             params['organizationName'] = self.org_name.data
+        if self.state.data:
+            params['state'] = self.state.data
+        if self.classification_code.data:
+            params['ccode'] = self.classification_code.data
+        if self.status.data:
+            params['status'] = self.status.data
         
         naics_code = self.get_naics_code()
         if naics_code:
             params['ncode'] = naics_code
+        
+        # Response deadline range
+        if self.rdl_from.data:
+            params['rdlfrom'] = self.rdl_from.data.strftime('%m/%d/%Y')
+        if self.rdl_to.data:
+            params['rdlto'] = self.rdl_to.data.strftime('%m/%d/%Y')
         
         return params

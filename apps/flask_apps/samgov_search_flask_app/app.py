@@ -1,13 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from flask_wtf.csrf import CSRFProtect, CSRFError  # Add CSRFProtect and CSRFError
+from flask_wtf.csrf import CSRFProtect, CSRFError
 from datetime import datetime, date
 import os
 
-# Import our custom modules
 from config import config
 from utils.models import db, User, SearchHistory, init_db
-from utils.forms import LoginForm, SearchForm
+from utils.forms import LoginForm, SearchForm, SettingsForm
 from utils.api_client import get_api_client
 
 def create_app(config_name=None):
@@ -78,17 +77,23 @@ def create_app(config_name=None):
     @app.route('/dashboard')
     @login_required
     def dashboard():
-        """Main dashboard with search form"""
+        """Main dashboard with search form and results"""
         form = SearchForm()
         
-        # Get user statistics
         search_count = current_user.get_search_count()
         recent_searches = current_user.get_recent_searches(limit=5)
+        
+        opportunities = session.get('last_search_results', [])
+        total_records = session.get('last_search_total', 0)
+        search_params = session.get('last_search_params', {})
         
         return render_template('dashboard.html', 
                              form=form, 
                              search_count=search_count,
-                             recent_searches=recent_searches)
+                             recent_searches=recent_searches,
+                             opportunities=opportunities,
+                             total_records=total_records,
+                             search_params=search_params)
     
     @app.route('/search', methods=['POST'])
     @login_required
@@ -98,8 +103,12 @@ def create_app(config_name=None):
         
         if form.validate_on_submit():
             try:
-                # Get API client
-                api_client = get_api_client()
+                api_key = current_user.sam_api_key or app.config.get('SAM_API_KEY')
+                if not api_key:
+                    flash('SAM.gov API key not configured. Please add your API key in Settings.', 'warning')
+                    return redirect(url_for('dashboard'))
+                
+                api_client = get_api_client(api_key)
                 
                 # Get search parameters from form
                 search_params = form.get_search_params()
@@ -125,10 +134,7 @@ def create_app(config_name=None):
                     
                     flash(f'Search completed! Found {result["total_records"]} total records. Displaying the first {len(result["opportunities"])}.', 'success')
                     
-                    return render_template('results.html', 
-                                         opportunities=result['opportunities'],
-                                         total_records=result['total_records'],
-                                         search_params=search_params)
+                    return redirect(url_for('dashboard'))
                 else:
                     flash(f'Search failed: {result["error"]}', 'danger')
                     
@@ -184,6 +190,37 @@ def create_app(config_name=None):
             flash(f'Export failed: {str(e)}', 'danger')
             return redirect(url_for('dashboard'))
     
+    @app.route('/export/excel')
+    @login_required
+    def export_excel():
+        """Export last search results to Excel"""
+        opportunities = session.get('last_search_results', [])
+        search_id = session.get('last_search_id')
+        
+        if not opportunities:
+            flash('No search results to export. Please perform a search first.', 'warning')
+            return redirect(url_for('dashboard'))
+        
+        try:
+            api_client = get_api_client()
+            excel_data = api_client.export_to_excel(opportunities, sheet_names=['Data'])
+            
+            if search_id:
+                search_history = SearchHistory.query.get(search_id)
+                if search_history and search_history.user_id == current_user.id:
+                    search_history.increment_export_count()
+            
+            response = make_response(excel_data)
+            response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            response.headers['Content-Disposition'] = f'attachment; filename=sam_opportunities_{date.today().strftime("%Y-%m-%d")}.xlsx'
+            
+            flash('Excel export completed successfully.', 'success')
+            return response
+            
+        except Exception as e:
+            flash(f'Export failed: {str(e)}', 'danger')
+            return redirect(url_for('dashboard'))
+    
     @app.route('/history')
     @login_required
     def search_history():
@@ -209,11 +246,14 @@ def create_app(config_name=None):
             return redirect(url_for('dashboard'))
         
         try:
-            # Get the search parameters
             search_params = search_history.get_search_params()
             
-            # Get API client and perform search
-            api_client = get_api_client()
+            api_key = current_user.sam_api_key or app.config.get('SAM_API_KEY')
+            if not api_key:
+                flash('SAM.gov API key not configured. Please add your API key in Settings.', 'warning')
+                return redirect(url_for('dashboard'))
+            
+            api_client = get_api_client(api_key)
             result = api_client.search_opportunities(search_params)
             
             if result['success']:
@@ -246,15 +286,54 @@ def create_app(config_name=None):
         
         return redirect(url_for('search_history'))
     
-    @app.route('/api/check_api_key')
+    @app.route('/api/check_api_key', methods=['POST'])
     @login_required
     def check_api_key():
-        """Check if SAM.gov API key is configured"""
-        api_key = app.config.get('SAM_API_KEY')
-        return jsonify({
-            'configured': bool(api_key),
-            'message': 'API key is configured' if api_key else 'SAM.gov API key not found. Please configure it in your environment variables.'
-        })
+        """Validate SAM.gov API key"""
+        api_key = request.json.get('api_key') if request.is_json else None
+        if not api_key:
+            api_key = current_user.sam_api_key
+        
+        if not api_key:
+            return jsonify({'success': False, 'message': 'No API key provided'})
+        
+        api_client = get_api_client(api_key)
+        result = api_client.test_connection(api_key)
+        
+        return jsonify(result)
+    
+    @app.route('/settings', methods=['GET', 'POST'])
+    @login_required
+    def settings():
+        """User settings page for API key management"""
+        form = SettingsForm()
+        
+        if request.method == 'GET':
+            form.sam_api_key.data = current_user.sam_api_key or ''
+            return render_template('settings.html', form=form)
+        
+        if form.validate_on_submit():
+            api_key = form.sam_api_key.data.strip() if form.sam_api_key.data else None
+            
+            if api_key:
+                api_client = get_api_client(api_key)
+                result = api_client.test_connection(api_key)
+                
+                if not result['success']:
+                    flash(f'API key validation failed: {result["message"]}', 'danger')
+                    return render_template('settings.html', form=form)
+                
+                current_user.sam_api_key = api_key
+                db.session.commit()
+                flash('API key saved and validated successfully!', 'success')
+            else:
+                current_user.sam_api_key = None
+                db.session.commit()
+                flash('API key cleared.', 'info')
+            
+            return redirect(url_for('dashboard'))
+        
+        return render_template('settings.html', form=form)
     
     # Error handlers
     @app.errorhandler(CSRFError)
