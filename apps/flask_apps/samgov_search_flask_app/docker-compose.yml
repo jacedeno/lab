@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  samgov-app:
+    build: .
+    container_name: samgov-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY}
+      - SAM_API_KEY=${SAM_API_KEY}
+    volumes:
+      - samgov-data:/app/instance
+
+volumes:
+  samgov-data:
