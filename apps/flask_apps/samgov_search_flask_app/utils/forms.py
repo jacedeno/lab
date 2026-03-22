@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, DateField, IntegerField, TextAreaField, SelectMultipleField
+from wtforms import StringField, PasswordField, SelectField, DateField, IntegerField, TextAreaField, SelectMultipleField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
 from wtforms.widgets import CheckboxInput, ListWidget
 from datetime import date, timedelta
@@ -35,6 +35,7 @@ class SettingsForm(FlaskForm):
         Optional(),
         Length(min=10, max=100, message='API key must be between 10 and 100 characters')
     ])
+    submit = SubmitField('Save API Key')
 
 class MultiCheckboxField(SelectMultipleField):
     """Custom field for multiple checkboxes"""
