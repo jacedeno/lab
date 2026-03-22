@@ -4,6 +4,12 @@ A professional Flask web application for searching federal contract opportunitie
 
 ## Features
 
+### 🔑 Multi-API Key Management
+- **Personal API Keys**: Each user can store multiple SAM.gov API keys
+- **Custom Nicknames**: Assign friendly names to identify each API key
+- **Easy Switching**: Set any key as active with one click
+- **Per-User Storage**: API keys are stored securely in user profile
+
 ### 🔍 Advanced Search Capabilities
 - **Date Range Filtering**: Search opportunities by posting date range
 - **Procurement Type Selection**: Filter by various procurement types (solicitations, awards, etc.)
@@ -17,6 +23,7 @@ A professional Flask web application for searching federal contract opportunitie
 - **User Sessions**: Persistent login sessions with remember me functionality
 - **Search History**: Track and manage previous searches
 - **Personal Dashboard**: User-specific statistics and recent activity
+- **Multiple API Keys**: Each user can store and manage several API keys with nicknames
 
 ### 📊 Professional Interface
 - **SAM.gov Inspired Design**: Professional government-style interface
@@ -101,7 +108,16 @@ docker exec -it samgov-app python init_db.py
 1. Visit [SAM.gov](https://sam.gov/content/api)
 2. Create a free account
 3. Request an API key for the Opportunities API
-4. Add the API key to your `.env` file
+4. Add the API key to your user profile in the Settings page
+
+**Adding API Keys in Settings:**
+- Navigate to Settings
+- Enter a nickname (e.g., "Work Account", "Personal")
+- Paste your SAM.gov API key
+- Click "Test Connection" to validate
+- Click "Add API Key" to save
+
+You can add multiple API keys and switch between them at any time.
 
 ## Configuration
 
@@ -109,10 +125,12 @@ docker exec -it samgov-app python init_db.py
 
 The application uses the following environment variables:
 
-- `SAM_API_KEY`: Your SAM.gov API key (required)
+- `SAM_API_KEY`: Fallback SAM.gov API key (optional, for backward compatibility)
 - `SECRET_KEY`: Flask secret key for sessions (required)
 - `DATABASE_URL`: Database connection string (optional, defaults to SQLite)
 - `FLASK_ENV`: Environment mode (development/production)
+
+**Note:** Users can add their own API keys from the Settings page. The global `SAM_API_KEY` is only used as a fallback when a user has not added their own key.
 
 ### Database Configuration
 
@@ -174,7 +192,7 @@ samgov_search_flask_app/
 ├── README.md             # This file
 ├── utils/
 │   ├── __init__.py
-│   ├── models.py         # Database models
+│   ├── models.py         # Database models (User, SearchHistory, UserAPIKey)
 │   ├── forms.py          # WTForms form definitions
 │   └── api_client.py     # SAM.gov API client
 ├── templates/
@@ -183,6 +201,7 @@ samgov_search_flask_app/
 │   ├── dashboard.html    # Main dashboard
 │   ├── results.html      # Search results
 │   ├── history.html      # Search history
+│   ├── settings.html     # User settings and API key management
 │   └── errors/
 │       ├── 404.html      # 404 error page
 │       └── 500.html      # 500 error page

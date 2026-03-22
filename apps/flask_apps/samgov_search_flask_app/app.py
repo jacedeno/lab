@@ -5,8 +5,8 @@ from datetime import datetime, date
 import os
 
 from config import config
-from utils.models import db, User, SearchHistory, init_db
-from utils.forms import LoginForm, SearchForm, SettingsForm
+from utils.models import db, User, SearchHistory, UserAPIKey, init_db
+from utils.forms import LoginForm, SearchForm, SettingsForm, AddAPIKeyForm
 from utils.api_client import get_api_client
 
 def create_app(config_name=None):
@@ -103,7 +103,7 @@ def create_app(config_name=None):
         
         if form.validate_on_submit():
             try:
-                api_key = current_user.sam_api_key or app.config.get('SAM_API_KEY')
+                api_key = current_user.get_active_api_key() or app.config.get('SAM_API_KEY')
                 if not api_key:
                     flash('SAM.gov API key not configured. Please add your API key in Settings.', 'warning')
                     return redirect(url_for('dashboard'))
@@ -248,7 +248,7 @@ def create_app(config_name=None):
         try:
             search_params = search_history.get_search_params()
             
-            api_key = current_user.sam_api_key or app.config.get('SAM_API_KEY')
+            api_key = current_user.get_active_api_key() or app.config.get('SAM_API_KEY')
             if not api_key:
                 flash('SAM.gov API key not configured. Please add your API key in Settings.', 'warning')
                 return redirect(url_for('dashboard'))
@@ -307,33 +307,62 @@ def create_app(config_name=None):
     def settings():
         """User settings page for API key management"""
         form = SettingsForm()
+        add_form = AddAPIKeyForm()
+        user_api_keys = UserAPIKey.query.filter_by(user_id=current_user.id).order_by(UserAPIKey.created_at.desc()).all()
         
         if request.method == 'GET':
             form.sam_api_key.data = current_user.sam_api_key or ''
-            return render_template('settings.html', form=form)
+            return render_template('settings.html', form=form, add_form=add_form, user_api_keys=user_api_keys)
         
-        if form.validate_on_submit():
-            api_key = form.sam_api_key.data.strip() if form.sam_api_key.data else None
+        if add_form.validate_on_submit():
+            api_key = add_form.api_key.data.strip()
+            nickname = add_form.nickname.data.strip()
             
-            if api_key:
-                api_client = get_api_client(api_key)
-                result = api_client.test_connection(api_key)
-                
-                if not result['success']:
-                    flash(f'API key validation failed: {result["message"]}', 'danger')
-                    return render_template('settings.html', form=form)
-                
-                current_user.sam_api_key = api_key
-                db.session.commit()
-                flash('API key saved and validated successfully!', 'success')
-            else:
-                current_user.sam_api_key = None
-                db.session.commit()
-                flash('API key cleared.', 'info')
+            existing = UserAPIKey.query.filter_by(user_id=current_user.id, nickname=nickname).first()
+            if existing:
+                flash(f'Nickname "{nickname}" already exists. Please use a different nickname.', 'danger')
+                return render_template('settings.html', form=form, add_form=add_form, user_api_keys=user_api_keys)
             
-            return redirect(url_for('dashboard'))
+            api_client = get_api_client(api_key)
+            result = api_client.test_connection(api_key)
+            
+            if not result['success']:
+                flash(f'API key validation failed: {result["message"]}', 'danger')
+                return render_template('settings.html', form=form, add_form=add_form, user_api_keys=user_api_keys)
+            
+            new_api_key = UserAPIKey(
+                user_id=current_user.id,
+                api_key=api_key,
+                nickname=nickname,
+                is_active=True
+            )
+            UserAPIKey.query.filter_by(user_id=current_user.id).update({'is_active': False})
+            db.session.add(new_api_key)
+            db.session.commit()
+            flash(f'API key "{nickname}" added and set as active!', 'success')
+            return redirect(url_for('settings'))
         
-        return render_template('settings.html', form=form)
+        return render_template('settings.html', form=form, add_form=add_form, user_api_keys=user_api_keys)
+    
+    @app.route('/settings/set_active_api/<int:api_key_id>', methods=['POST'])
+    @login_required
+    def set_active_api(api_key_id):
+        api_key = UserAPIKey.query.filter_by(id=api_key_id, user_id=current_user.id).first_or_404()
+        UserAPIKey.query.filter_by(user_id=current_user.id).update({'is_active': False})
+        api_key.is_active = True
+        db.session.commit()
+        flash(f'API key "{api_key.nickname}" is now active.', 'success')
+        return redirect(url_for('settings'))
+    
+    @app.route('/settings/delete_api/<int:api_key_id>', methods=['POST'])
+    @login_required
+    def delete_api(api_key_id):
+        api_key = UserAPIKey.query.filter_by(id=api_key_id, user_id=current_user.id).first_or_404()
+        nickname = api_key.nickname
+        db.session.delete(api_key)
+        db.session.commit()
+        flash(f'API key "{nickname}" deleted.', 'info')
+        return redirect(url_for('settings'))
     
     # Error handlers
     @app.errorhandler(CSRFError)

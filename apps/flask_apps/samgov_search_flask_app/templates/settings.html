@@ -6,32 +6,84 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm mb-4">
                 <div class="card-header bg-sam-navy text-white">
-                    <h4 class="mb-0"><i class="fas fa-cog me-2"></i>Settings</h4>
+                    <h4 class="mb-0"><i class="fas fa-key me-2"></i>My API Keys</h4>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title mb-4">SAM.gov API Key Configuration</h5>
-                    
+                    {% if user_api_keys %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nickname</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key in user_api_keys %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-key text-primary me-2"></i>{{ key.nickname }}
+                                    </td>
+                                    <td>
+                                        {% if key.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ key.created_at.strftime('%m/%d/%Y') }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if not key.is_active %}
+                                            <form action="{{ url_for('set_active_api', api_key_id=key.id) }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-outline-success" title="Set as Active">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                            <form action="{{ url_for('delete_api', api_key_id=key.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete API key {{ key.nickname }}?');">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">You haven't added any API keys yet. Add your first API key below.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-sam-navy text-white">
+                    <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add New API Key</h4>
+                </div>
+                <div class="card-body">
                     <p class="text-muted small mb-4">
-                        Enter your SAM.gov API key to enable search functionality. 
-                        Your API key is stored securely in your user profile and is only used for your searches.
+                        Enter your SAM.gov API key and a nickname to identify it. 
+                        The nickname is required and must be unique among your API keys.
                     </p>
                     
                     <form method="POST" action="{{ url_for('settings') }}">
-                        {{ form.hidden_tag() }}
+                        {{ add_form.hidden_tag() }}
                         
                         <div class="mb-3">
-                            <label for="sam_api_key" class="form-label">API Key</label>
-                            <div class="input-group">
-                                {{ form.sam_api_key(class="form-control", id="api_key_input", placeholder="Enter your SAM.gov API key") }}
-                                <button class="btn btn-outline-secondary" type="button" id="toggle_key_visibility">
-                                    <i class="fas fa-eye" id="toggle_icon"></i>
-                                </button>
-                            </div>
-                            {% if form.sam_api_key.errors %}
+                            <label for="nickname" class="form-label">API Nickname</label>
+                            {{ add_form.nickname(class="form-control", placeholder="e.g., Work Account, Personal, Production") }}
+                            {% if add_form.nickname.errors %}
                                 <div class="text-danger small mt-1">
-                                    {% for error in form.sam_api_key.errors %}
+                                    {% for error in add_form.nickname.errors %}
                                         {{ error }}
                                     {% endfor %}
                                 </div>
@@ -39,17 +91,34 @@
                         </div>
                         
                         <div class="mb-3">
-                            <button type="button" class="btn btn-outline-primary" id="test_connection_btn">
+                            <label for="api_key" class="form-label">API Key</label>
+                            <div class="input-group">
+                                {{ add_form.api_key(class="form-control", id="new_api_key_input", placeholder="Enter your SAM.gov API key") }}
+                                <button class="btn btn-outline-secondary" type="button" id="toggle_new_key_visibility">
+                                    <i class="fas fa-eye" id="new_toggle_icon"></i>
+                                </button>
+                            </div>
+                            {% if add_form.api_key.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in add_form.api_key.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-primary" id="test_new_connection_btn">
                                 <i class="fas fa-plug me-2"></i>Test Connection
                             </button>
-                            <span id="connection_status" class="ms-3"></span>
+                            <span id="new_connection_status" class="ms-3"></span>
                         </div>
                         
                         <hr class="my-4">
                         
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
-                            {{ form.submit(class="btn btn-primary", value="Save API Key") }}
+                            {{ add_form.submit(class="btn btn-primary", value="Add API Key") }}
                         </div>
                     </form>
                 </div>
@@ -75,60 +144,64 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('toggle_key_visibility');
-    const apiKeyInput = document.getElementById('api_key_input');
-    const toggleIcon = document.getElementById('toggle_icon');
-    const testBtn = document.getElementById('test_connection_btn');
-    const statusSpan = document.getElementById('connection_status');
+    const toggleBtn = document.getElementById('toggle_new_key_visibility');
+    const apiKeyInput = document.getElementById('new_api_key_input');
+    const toggleIcon = document.getElementById('new_toggle_icon');
+    const testBtn = document.getElementById('test_new_connection_btn');
+    const statusSpan = document.getElementById('new_connection_status');
     
-    toggleBtn.addEventListener('click', function() {
-        if (apiKeyInput.type === 'password') {
-            apiKeyInput.type = 'text';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
-        } else {
-            apiKeyInput.type = 'password';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
-        }
-    });
-    
-    testBtn.addEventListener('click', function() {
-        const apiKey = apiKeyInput.value.trim();
-        if (!apiKey) {
-            statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>Please enter an API key first</span>';
-            return;
-        }
-        
-        testBtn.disabled = true;
-        testBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
-        statusSpan.innerHTML = '';
-        
-        fetch('{{ url_for("check_api_key") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ form.csrf_token.data if form.csrf_token else "" }}'
-            },
-            body: JSON.stringify({ api_key: apiKey })
-        })
-        .then(response => response.json())
-        .then(data => {
-            testBtn.disabled = false;
-            testBtn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
-            
-            if (data.success) {
-                statusSpan.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>' + data.message + '</span>';
+    if (toggleBtn && apiKeyInput) {
+        toggleBtn.addEventListener('click', function() {
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
             } else {
-                statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>' + data.message + '</span>';
+                apiKeyInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
-        })
-        .catch(error => {
-            testBtn.disabled = false;
-            testBtn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
-            statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>Connection test failed</span>';
         });
-    });
+    }
+    
+    if (testBtn) {
+        testBtn.addEventListener('click', function() {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>Please enter an API key first</span>';
+                return;
+            }
+            
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+            statusSpan.innerHTML = '';
+            
+            fetch('{{ url_for("check_api_key") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ add_form.csrf_token.data if add_form.csrf_token else "" }}'
+                },
+                body: JSON.stringify({ api_key: apiKey })
+            })
+            .then(response => response.json())
+            .then(data => {
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
+                
+                if (data.success) {
+                    statusSpan.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>' + data.message + '</span>';
+                } else {
+                    statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>' + data.message + '</span>';
+                }
+            })
+            .catch(error => {
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
+                statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>Connection test failed</span>';
+            });
+        });
+    }
 });
 </script>
 {% endblock %}

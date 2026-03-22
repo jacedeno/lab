@@ -6,6 +6,19 @@ import json
 
 db = SQLAlchemy()
 
+class UserAPIKey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    api_key = db.Column(db.String(100), nullable=False)
+    nickname = db.Column(db.String(50), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('api_keys', lazy=True, cascade='all, delete-orphan'))
+    
+    def __repr__(self):
+        return f'<UserAPIKey {self.nickname} - User {self.user_id}>'
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -14,8 +27,11 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     
-    # Relationship with search history
     search_history = db.relationship('SearchHistory', backref='user', lazy=True, cascade='all, delete-orphan')
+    
+    def get_active_api_key(self):
+        active_key = UserAPIKey.query.filter_by(user_id=self.id, is_active=True).first()
+        return active_key.api_key if active_key else None
     
     def set_password(self, password):
         """Hash and set the password"""
