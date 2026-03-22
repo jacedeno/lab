@@ -77,11 +77,24 @@ A professional Flask web application for searching federal contract opportunitie
 
 ## Default Login Credentials
 
-After running the database initialization script, you can log in with:
-- **Email**: admin@example.com
-- **Password**: admin123
+User accounts are statically defined in `init_db.py` and created when the database is initialized. There is no self-registration — only the following accounts exist:
 
-**Important**: Change this password after your first login!
+| Email | Password |
+|-------|----------|
+| cedenoj@excemca.com | excemca#2025 |
+| hernandezt@excemca.com | excemca#2025 |
+| shaheins@excemca.com | excemca#2025 |
+| guest@excemca.com | 12345 |
+
+> **Note:** Passwords cannot be changed from the UI. To add or modify users, update `init_db.py` and re-run the initialization script.
+
+### Initialize the database (first time or after reset)
+
+```bash
+docker exec -it samgov-app python init_db.py
+```
+
+> **Warning:** `init_db.py` drops and recreates all tables. Running it again will erase all search history.
 
 ## Getting a SAM.gov API Key
 
