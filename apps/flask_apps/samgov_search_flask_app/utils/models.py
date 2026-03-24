@@ -108,11 +108,22 @@ class SearchHistory(db.Model):
 def init_db(app):
     """Initialize the database with the Flask app"""
     db.init_app(app)
-    
+
     with app.app_context():
-        # Create all tables
-        db.create_all()
-        
+        # Use inspect to check existing tables, then only create missing ones
+        from sqlalchemy import inspect, text
+        with db.engine.connect() as conn:
+            inspector = inspect(conn)
+            existing = set(inspector.get_table_names())
+
+        # Only create tables that don't already exist
+        tables_to_create = [
+            table for table in db.metadata.sorted_tables
+            if table.name not in existing
+        ]
+        if tables_to_create:
+            db.metadata.create_all(db.engine, tables=tables_to_create)
+
         # Create default users if they don't exist
         create_default_users()
 
