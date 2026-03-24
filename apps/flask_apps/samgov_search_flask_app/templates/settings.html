@@ -180,11 +180,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ add_form.csrf_token.data if add_form.csrf_token else "" }}'
+                    'X-CSRFToken': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ api_key: apiKey })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server returned ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
                 testBtn.disabled = false;
                 testBtn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
@@ -198,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 testBtn.disabled = false;
                 testBtn.innerHTML = '<i class="fas fa-plug me-2"></i>Test Connection';
-                statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>Connection test failed</span>';
+                statusSpan.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle me-1"></i>Connection test failed: ' + error.message + '</span>';
             });
         });
     }
