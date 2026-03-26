@@ -1,4 +1,0 @@
-mirrors:
-  "docker-registry.docker-registry.svc.cluster.local:5000":
-    endpoint:
-      - "http://10.43.125.123:5000"

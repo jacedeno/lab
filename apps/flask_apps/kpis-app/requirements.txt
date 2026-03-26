@@ -1,3 +1,0 @@
-flask>=3.0
-gunicorn>=21.2
-resend>=2.0.0
